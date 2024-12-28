@@ -60,7 +60,7 @@ zstyle ':fzf-tab:complete:eza:*' fzf-preview 'eza --tree --level=2 --color=alway
 # Aliases
 alias vim="nvim"
 alias cat="bat"
-alias ls="eza --color=always --long --git --icons=always --no-user --no-filesize --no-permissions --no-time --all"
+alias ls="eza --color=always --long --grid --no-git --icons=always --no-user --no-filesize --no-permissions --no-time --all"
 
 # Setup fzf
 eval "$(fzf --zsh)"
