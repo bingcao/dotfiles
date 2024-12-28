@@ -2,3 +2,4 @@ tags
 .luarc.json
 spell/
 lazy-lock.json
+.config/tmux/plugins
