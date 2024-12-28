@@ -62,5 +62,8 @@ alias vim="nvim"
 # Setup fzf
 eval "$(fzf --zsh)"
 
+# Setup zoxide
+eval "$(zoxide init --cmd cd zsh)"
+
 # Setup and use oh-my-posh
 eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/config.toml)"
