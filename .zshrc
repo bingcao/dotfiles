@@ -48,19 +48,37 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
-# Completion styling
+# Make completions ignore casing
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+# Make completions use colors
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+# Make completions use fzf to preview
 zstyle ':completion:*' menu no
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
-zstyle ':fzf-tab:complete:ls:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --tree --level=2 --color=always $realpath'
+zstyle ':fzf-tab:complete:eza:*' fzf-preview 'eza --tree --level=2 --color=always $realpath'
 
 # Aliases
-alias ls='ls --color'
 alias vim="nvim"
+alias cat="bat"
+alias ls="eza --color=always --long --git --icons=always --no-user --no-filesize --no-permissions --no-time --all"
 
 # Setup fzf
 eval "$(fzf --zsh)"
+
+# Preview files on Ctrl+t
+export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}'"
+
+# Better previews when using **TAB
+_fzf_comprun() {
+  local command=$1
+  shift
+
+  case "$command" in 
+    cd)           fzf --preview 'eza --tree --color=always --level=2 {} | head -200' "$@" ;;
+    export|unset) fzf --preview "eval 'echo' '$'{}" "$@" ;;
+    *)            fzf --preview 'bat -n --color=always --line-range :500 {}' "$@" ;;
+  esac
+}
 
 # Setup zoxide
 eval "$(zoxide init --cmd cd zsh)"
