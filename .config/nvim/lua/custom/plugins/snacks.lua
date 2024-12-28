@@ -15,7 +15,7 @@ return {
         { section = 'startup' },
         {
           section = 'terminal',
-          cmd = 'sudo pokemon-colorscripts -r --no-title; sleep .1',
+          cmd = 'pokemon-colorscripts -r --no-title; sleep .1',
           random = 10,
           pane = 2,
           indent = 4,
