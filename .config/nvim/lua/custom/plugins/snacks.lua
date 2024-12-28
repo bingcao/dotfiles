@@ -37,61 +37,13 @@ return {
     words = { enabled = true },
   },
   keys = {
-    {
-      '<leader>gb',
-      function()
-        Snacks.gitbrowse()
-      end,
-      desc = 'Git Browse',
-    },
-    {
-      '<leader>gg',
-      function()
-        Snacks.gitbrowse()
-      end,
-      desc = 'Open Lazygit',
-    },
-    {
-      '<leader>gl',
-      function()
-        Snacks.gitbrowse()
-      end,
-      desc = 'Lazygit log file',
-    },
-    {
-      '<leader>nd',
-      function()
-        Snacks.notifier.hide()
-      end,
-      desc = 'Dismiss All Notifications',
-    },
-    {
-      '<leader>nh',
-      function()
-        Snacks.notifier.show_history()
-      end,
-      desc = 'Notification History',
-    },
-    {
-      '<leader>S.',
-      function()
-        Snacks.scratch()
-      end,
-      desc = 'Toggle scratch buffer',
-    },
-    {
-      '<leader>Ss',
-      function()
-        Snacks.scratch.select()
-      end,
-      desc = 'Select Scratch Buffer',
-    },
-    {
-      '<C-t>',
-      function()
-        Snacks.terminal()
-      end,
-      desc = 'Toggle Terminal',
-    },
+    { '<leader>gb', function() Snacks.gitbrowse() end, desc = 'Git Browse' },
+    { '<leader>gg', function() Snacks.gitbrowse() end, desc = 'Open Lazygit' },
+    { '<leader>gl', function() Snacks.gitbrowse() end, desc = 'Lazygit log file' },
+    { '<leader>nd', function() Snacks.notifier.hide() end, desc = 'Dismiss All Notifications' },
+    { '<leader>nh', function() Snacks.notifier.show_history() end, desc = 'Notification History' },
+    { '<leader>S.', function() Snacks.scratch() end, desc = 'Toggle scratch buffer' },
+    { '<leader>Ss', function() Snacks.scratch.select() end, desc = 'Select Scratch Buffer' },
+    { '<C-t>', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
   },
 }
