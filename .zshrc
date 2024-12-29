@@ -83,5 +83,16 @@ _fzf_comprun() {
 # Setup zoxide
 eval "$(zoxide init --cmd cd zsh)"
 
+# Better yazi
+export EDITOR=nvim
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
+
 # Setup and use oh-my-posh
 eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/config.toml)"
