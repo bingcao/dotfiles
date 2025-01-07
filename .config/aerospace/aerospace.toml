@@ -225,6 +225,10 @@ if.app-name-regex-substring = 'calendar'
 run = 'move-node-to-workspace W'
 
 [[on-window-detected]]
+if.app-name-regex-substring = 'zoom'
+run = 'move-node-to-workspace W'
+
+[[on-window-detected]]
 if.app-name-regex-substring = 'finder'
 run = 'layout floating'
 
