@@ -44,6 +44,6 @@ return {
     { '<leader>nh', function() Snacks.notifier.show_history() end, desc = 'Notification History' },
     { '<leader>S.', function() Snacks.scratch() end, desc = 'Toggle scratch buffer' },
     { '<leader>Ss', function() Snacks.scratch.select() end, desc = 'Select Scratch Buffer' },
-    { '<C-t>', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
+    { '<leader>t', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
   },
 }
