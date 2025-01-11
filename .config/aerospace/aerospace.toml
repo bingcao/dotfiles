@@ -218,7 +218,7 @@ run = ['layout floating', 'move-node-to-workspace B']
 
 [[on-window-detected]]
 if.app-name-regex-substring = 'ghostty'
-run = 'move-node-to-workspace T'
+run = 'move-node-to-workspace C'
 
 [[on-window-detected]]
 if.app-id = 'com.spotify.client'
