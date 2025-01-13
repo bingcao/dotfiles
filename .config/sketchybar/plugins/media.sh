@@ -1,14 +1,12 @@
 #!/bin/bash
 
 STATE="$(echo "$INFO" | jq -r '.state')"
-echo $STATE
+MEDIA="$(echo "$INFO" | jq -r '.title + " - " + .artist')"
+APP="$(echo "$INFO" | jq -r '.app')"
 if [ "$STATE" = "playing" ]; then
-    MEDIA="$(echo "$INFO" | jq -r '.title + " - " + .artist')"
-    sketchybar --set $NAME label="􀊄 $MEDIA" drawing=on
+    sketchybar --set $NAME icon="$($CONFIG_DIR/plugins/icon_map_fn.sh "$APP")" label="$MEDIA" drawing=on
 elif [ "$STATE" = "paused" ]; then
-    MEDIA="$(echo "$INFO" | jq -r '.title + " - " + .artist')"
-    sketchybar --set $NAME label="􀊆 $MEDIA" drawing=on
+    sketchybar --set $NAME icon=􀊆 label="$MEDIA" drawing=on
 else
     sketchybar --set $NAME drawing=off
 fi
-

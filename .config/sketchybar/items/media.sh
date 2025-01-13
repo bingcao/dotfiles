@@ -1,10 +1,12 @@
 #!/bin/bash
 
+COLOR=$ORANGE
+
 sketchybar --add item media e \
            --set media label.max_chars=35 \
-                       icon.padding_left=0 \
+                       icon.font="sketchybar-app-font:Regular:16.0" \
                        scroll_texts=on \
-                       icon=􀒷 \
-                       background.drawing=off \
                        script="$PLUGIN_DIR/media.sh" \
+                       icon.color=$ORANGE \
+                       background.border_color=$ORANGE \
            --subscribe media media_change

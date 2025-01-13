@@ -1,6 +1,10 @@
 #!/bin/bash
 
+COLOR=$PURPLE
+
 sketchybar --add item calendar right \
            --set calendar icon=􀐫  \
-                          update_freq=30 \
+                          icon.color=$COLOR \
+                          background.border_color=$COLOR \
+                          update_freq=1 \
                           script="$PLUGIN_DIR/calendar.sh"

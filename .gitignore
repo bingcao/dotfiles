@@ -3,3 +3,4 @@ tags
 spell/
 lazy-lock.json
 .config/tmux/plugins
+*.env*
