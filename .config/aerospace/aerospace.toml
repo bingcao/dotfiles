@@ -74,7 +74,7 @@ inner.horizontal = 5
 inner.vertical =   5
 outer.left =       5
 outer.bottom =     5
-outer.top =        [{monitor."dell" = 39}, 5]
+outer.top =        [{monitor."built-in" = 5}, 39]
 outer.right =      5
 
 # 'main' binding mode declaration
