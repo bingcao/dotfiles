@@ -426,6 +426,9 @@ function icon_map() {
   "WhatsApp")
     icon_result=":whats_app:"
     ;;
+  "OrbStack")
+    icon_result=":orbstack:"
+    ;;
   *)
     icon_result=":default:"
     ;;

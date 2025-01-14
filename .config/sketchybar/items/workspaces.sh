@@ -1,21 +1,19 @@
 #!/bin/bash
 
-COLOR=$TEAL
+COLOR=$PINK
 
 sketchybar --add event aerospace_workspace_change
 
 for sid in $(aerospace list-workspaces --all); do
     sketchybar --add item space.$sid left \
                --subscribe space.$sid aerospace_workspace_change \
+                                      space_windows_change \
                --set space.$sid background.drawing=off \
-                                background.color=$COLOR \
-                                background.corner_radius=30 \
-                                label="$sid" \
-                                label.padding_left=8 \
-                                label.padding_right=8 \
-                                icon.drawing=off \
+                                icon="$sid" \
+                                icon.padding_left=8 \
+                                icon.padding_right=8 \
                                 click_script="aerospace workspace $sid" \
-                                script="$CONFIG_DIR/plugins/aerospace.sh $sid"
+                                script="$CONFIG_DIR/plugins/aerospace.sh $sid $COLOR"
 done
 
 # consolidate space numbers and add a background

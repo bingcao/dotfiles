@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COLOR=$PINK
+COLOR=$TEAL
 
 sketchybar --add item front_app q \
            --set front_app icon.font="sketchybar-app-font:Regular:16.0" \
