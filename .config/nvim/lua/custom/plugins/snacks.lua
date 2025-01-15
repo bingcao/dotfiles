@@ -27,6 +27,7 @@ return {
     indent = { enabled = true },
     input = { enabled = true },
     lazygit = { enabled = true },
+    picker = { enabled = true },
     notifier = { enabled = true },
     notify = { enabled = true },
     quickfile = { enabled = true },
@@ -45,5 +46,10 @@ return {
     { '<leader>S.', function() Snacks.scratch() end, desc = 'Toggle scratch buffer' },
     { '<leader>Ss', function() Snacks.scratch.select() end, desc = 'Select Scratch Buffer' },
     { '<leader>t', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
+    { '<leader><leader>', function() Snacks.picker.buffers() end, desc = 'Open buffers' },
+    { '<leader>sf', function() Snacks.picker.files { hidden = true } end, desc = '[F]iles' },
+    { '<leader>sg', function() Snacks.picker.grep { hidden = true } end, desc = '[G]rep' },
+    { '<leader>sh', function() Snacks.picker.help {} end, desc = '[H]elp' },
+    { '<leader>sl', function() Snacks.picker.lsp_symbols() end, desc = '[L]SP Symbols' },
   },
 }
