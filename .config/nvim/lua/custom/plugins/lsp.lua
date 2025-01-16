@@ -166,9 +166,9 @@ return {
       formatters_by_ft = {
         lua = { 'stylua' },
         python = { 'ruff_fix', 'ruff_format' },
-        javascript = { { 'prettier', 'eslint_d' } },
-        typescript = { { 'prettier', 'eslint_d' } },
-        typescriptreact = { { 'prettier', 'eslint_d' } },
+        javascript = { 'prettier' },
+        typescript = { 'prettier' },
+        typescriptreact = { 'prettier' },
       },
     },
   },
