@@ -12,6 +12,7 @@ return {
       sections = {
         { section = 'header' },
         { section = 'keys', gap = 1, padding = 1 },
+        { section = 'recent_files', title = 'Recent Files', icon = '', indent = 2, padding = 1 },
         { section = 'startup' },
         {
           section = 'terminal',
@@ -46,10 +47,13 @@ return {
     { '<leader>S.', function() Snacks.scratch() end, desc = 'Toggle scratch buffer' },
     { '<leader>Ss', function() Snacks.scratch.select() end, desc = 'Select Scratch Buffer' },
     { '<leader>t', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
-    { '<leader><leader>', function() Snacks.picker.buffers() end, desc = 'Open buffers' },
-    { '<leader>sf', function() Snacks.picker.files { hidden = true } end, desc = '[F]iles' },
+    { '<leader><leader>', function() Snacks.picker.files { hidden = true } end, desc = 'Files' },
+    { '<leader>.', function() Snacks.picker.buffers() end, desc = 'Open buffers' },
+    { '<leader>,', function() Snacks.picker.resume() end, desc = 'Resume' },
     { '<leader>sg', function() Snacks.picker.grep { hidden = true } end, desc = '[G]rep' },
-    { '<leader>sh', function() Snacks.picker.help {} end, desc = '[H]elp' },
+    { '<leader>sh', function() Snacks.picker.help() end, desc = '[H]elp' },
     { '<leader>sl', function() Snacks.picker.lsp_symbols() end, desc = '[L]SP Symbols' },
+    { '<leader>sk', function() Snacks.picker.keymaps() end, desc = '[K]eymaps' },
+    { '<leader>sr', function() Snacks.picker.recent() end, desc = '[R]ecents' },
   },
 }
