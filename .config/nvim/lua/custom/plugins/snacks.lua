@@ -55,5 +55,7 @@ return {
     { '<leader>sl', function() Snacks.picker.lsp_symbols() end, desc = '[L]SP Symbols' },
     { '<leader>sk', function() Snacks.picker.keymaps() end, desc = '[K]eymaps' },
     { '<leader>sr', function() Snacks.picker.recent() end, desc = '[R]ecents' },
+    { '<leader>sj', function() Snacks.picker.jumps() end, desc = '[J]ump list' },
+    { '<leader>sc', function() Snacks.picker.files { cwd = vim.fn.stdpath 'config' } end, desc = 'Neovim [C]onfig' },
   },
 }
