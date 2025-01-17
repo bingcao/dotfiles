@@ -16,7 +16,7 @@ end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup {
-  { import = 'custom.plugins' },
+  { import = 'plugins' },
 }
 
 -- See `:help modeline`
