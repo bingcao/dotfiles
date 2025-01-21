@@ -4,15 +4,21 @@ COLOR=$PINK
 
 sketchybar --add event aerospace_workspace_change
 
-for mid in $(aerospace list-monitors --format "%{monitor-id}"); do 
+MONITORS=$(aerospace list-monitors --format "%{monitor-id} %{monitor-appkit-nsscreen-screens-id}")
+
+IFS=$'\n'
+
+for line in $(echo "$MONITORS"); do
     spaces=()
-    for sid in $(aerospace list-workspaces --monitor "$mid"); do
+    aerospace_id=$(echo "$line" | awk '{print $1}')
+    sketchybar_id=$(echo "$line" | awk '{print $2}')
+    for sid in $(aerospace list-workspaces --monitor "$aerospace_id"); do
         spaces+=(space."$sid")
         sketchybar --add item space.$sid left \
                    --subscribe space.$sid aerospace_workspace_change \
                                           space_windows_change \
                    --set space.$sid background.drawing=off \
-                                    display="$mid" \
+                                    display="$sketchybar_id" \
                                     icon="$sid" \
                                     icon.padding_left=8 \
                                     icon.padding_right=8 \
@@ -20,10 +26,9 @@ for mid in $(aerospace list-monitors --format "%{monitor-id}"); do
                                     script="$CONFIG_DIR/plugins/aerospace.sh $sid $COLOR"
     done
     # consolidate space numbers and add a background
-    sketchybar --add bracket spaces.$mid "${spaces[@]}"                 \
-               --set         spaces.$mid background.border_color=$COLOR \
+    sketchybar --add bracket spaces.$sid "${spaces[@]}"                 \
+               --set         spaces.$sid background.border_color=$COLOR \
                                     blur_radius=2                       \
                                     background.height=30
+
 done
-
-

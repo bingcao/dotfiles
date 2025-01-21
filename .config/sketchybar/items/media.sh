@@ -2,7 +2,7 @@
 
 COLOR=$ORANGE
 
-sketchybar --add item media e \
+sketchybar --add item media q \
            --set media label.max_chars=25 \
                        icon.font="sketchybar-app-font:Regular:16.0" \
                        scroll_texts=on \
