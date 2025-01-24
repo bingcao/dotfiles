@@ -1,3 +1,6 @@
 git:
   fetchAll: false
   branchPrefix: "tony-"
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
