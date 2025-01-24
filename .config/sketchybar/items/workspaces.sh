@@ -26,8 +26,8 @@ for line in $(echo "$MONITORS"); do
                                     script="$CONFIG_DIR/plugins/aerospace.sh $sid $COLOR"
     done
     # consolidate space numbers and add a background
-    sketchybar --add bracket spaces.$sid "${spaces[@]}"                 \
-               --set         spaces.$sid background.border_color=$COLOR \
+    sketchybar --add bracket spaces."$sketchybar_id" "${spaces[@]}"                 \
+               --set         spaces."$sketchybar_id" background.border_color=$COLOR \
                                     blur_radius=2                       \
                                     background.height=30
 
