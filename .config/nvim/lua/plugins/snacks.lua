@@ -39,23 +39,30 @@ return {
     words = { enabled = true },
   },
   keys = {
+    -- Git shortcuts
     { '<leader>gb', function() Snacks.gitbrowse() end, desc = 'Git Browse' },
     { '<leader>gg', function() Snacks.lazygit() end, desc = 'Open Lazygit' },
     { '<leader>gl', function() Snacks.lazygit.log_file() end, desc = 'Lazygit log file' },
+    -- Notification shortcuts
     { '<leader>nd', function() Snacks.notifier.hide() end, desc = 'Dismiss All Notifications' },
     { '<leader>nh', function() Snacks.notifier.show_history() end, desc = 'Notification History' },
+    -- Scratch buffer shortcuts
     { '<leader>S.', function() Snacks.scratch() end, desc = 'Toggle scratch buffer' },
     { '<leader>Ss', function() Snacks.scratch.select() end, desc = 'Select Scratch Buffer' },
+    -- Terminal shortcuts
     { '<leader>t', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
+    -- Picker shortcuts
     { '<leader><leader>', function() Snacks.picker.files { hidden = true } end, desc = 'Files' },
-    { '<leader>.', function() Snacks.picker.buffers() end, desc = 'Open buffers' },
+    { '<leader>.', function() Snacks.picker.smart() end, desc = 'Smart' },
+    { '<leader>/', function() Snacks.picker.grep { hidden = true } end, desc = 'Grep' },
     { '<leader>,', function() Snacks.picker.resume() end, desc = 'Resume' },
-    { '<leader>sg', function() Snacks.picker.grep { hidden = true } end, desc = '[G]rep' },
+    { '<leader>:', function() Snacks.picker.command_history() end, desc = 'Command history' },
     { '<leader>sh', function() Snacks.picker.help() end, desc = '[H]elp' },
     { '<leader>sl', function() Snacks.picker.lsp_symbols() end, desc = '[L]SP Symbols' },
     { '<leader>sk', function() Snacks.picker.keymaps() end, desc = '[K]eymaps' },
     { '<leader>sr', function() Snacks.picker.recent() end, desc = '[R]ecents' },
     { '<leader>sj', function() Snacks.picker.jumps() end, desc = '[J]ump list' },
     { '<leader>sc', function() Snacks.picker.files { cwd = vim.fn.stdpath 'config' } end, desc = 'Neovim [C]onfig' },
+    { '<leader>sL', function() Snacks.picker.lines() end, desc = '[L]ines' },
   },
 }
