@@ -53,7 +53,7 @@ return {
     { '<leader>t', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
     -- Picker shortcuts
     { '<leader><leader>', function() Snacks.picker.files { hidden = true } end, desc = 'Files' },
-    { '<leader>.', function() Snacks.picker.smart() end, desc = 'Smart' },
+    { '<leader>.', function() Snacks.picker.recent() end, desc = 'Recent' },
     { '<leader>/', function() Snacks.picker.grep { hidden = true } end, desc = 'Grep' },
     { '<leader>,', function() Snacks.picker.resume() end, desc = 'Resume' },
     { '<leader>:', function() Snacks.picker.command_history() end, desc = 'Command history' },
