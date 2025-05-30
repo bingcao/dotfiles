@@ -3,7 +3,7 @@ return {
     'rgroli/other.nvim',
     keys = {
       { '<leader>oc', '<cmd>:Other<CR>', desc = '[O]pen related file in [C]urrent window' },
-      { '<leader>ov', '<cmd>:OtherVSplit', desc = '[O]pen related file in [V]ertical split' },
+      { '<leader>ov', '<cmd>:OtherVSplit<CR>', desc = '[O]pen related file in [V]ertical split' },
     },
     config = function()
       -- Can't specify opts in normal lazy vim way because plugin doesn't support it
