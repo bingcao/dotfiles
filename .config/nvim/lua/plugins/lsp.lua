@@ -84,22 +84,8 @@ return {
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        pyright = {
-          enabled = true,
-          settings = {
-            pyright = {
-              disableOrganizeImports = true,
-            },
-            python = {
-              analysis = {
-                ignore = { '*' },
-                typeCheckingMode = 'basic',
-              },
-            },
-          },
-        },
-        basedpyright = { enabled = false, settings = { basedpyright = { analysis = { typeCheckingMode = 'off' } } } },
         ruff = {},
+        ty = {},
         graphql = {},
         spectral = {},
         yamlls = {},
@@ -165,6 +151,7 @@ return {
       },
       formatters_by_ft = {
         lua = { 'stylua' },
+        json = { 'prettier' },
         python = { 'ruff_fix', 'ruff_format' },
         javascript = { 'prettier' },
         typescript = { 'prettier' },
