@@ -30,6 +30,8 @@ return {
       ensure_installed = {
         'ruff',
         'ty',
+        'tsgo',
+        'oxlint',
         'graphql',
         'spectral',
         'yamlls',
@@ -48,7 +50,6 @@ return {
     opts = {
       ensure_installed = {
         'prettier',
-        'eslint_d',
         'stylua',
       },
     },
@@ -69,9 +70,9 @@ return {
         lua = { 'stylua' },
         json = { 'prettier' },
         python = { 'ruff_fix', 'ruff_format' },
-        javascript = { 'prettier' },
-        typescript = { 'prettier' },
-        typescriptreact = { 'prettier' },
+        javascript = { 'prettier', 'oxlint' },
+        typescript = { 'prettier', 'oxlint' },
+        typescriptreact = { 'prettier', 'oxlint' },
       },
     },
   },
@@ -110,12 +111,6 @@ return {
       },
     },
     opts_extend = { 'sources.default' },
-  },
-
-  {
-    'pmizio/typescript-tools.nvim',
-    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
-    opts = {},
   },
 
   -- types for neovim
