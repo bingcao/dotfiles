@@ -28,10 +28,10 @@ return {
     'williamboman/mason-lspconfig.nvim',
     opts = {
       ensure_installed = {
+        'oxlint',
         'ruff',
         'ty',
         'tsgo',
-        'oxlint',
         'graphql',
         'spectral',
         'yamlls',
