@@ -1,0 +1,57 @@
+{
+  "model": "us.anthropic.claude-opus-4-6-v1",
+  "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+  "teammateMode": "tmux",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/tmux/claude-status-hook.sh working"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/tmux/claude-status-hook.sh done"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/tmux/claude-status-hook.sh idle"
+          }
+        ]
+      },
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/tmux/claude-status-hook.sh permission"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/tmux/claude-status-hook.sh ended"
+          }
+        ]
+      }
+    ]
+  }
+}
