@@ -80,8 +80,8 @@ generate_entries() {
 
 while true; do
   output=$(generate_entries | fzf --read0 --ansi --reverse \
-    --header 'enter=switch / ctrl-r=rename / ctrl-a=new' \
-    --expect=ctrl-r,ctrl-a)
+    --header 'enter=switch / ctrl-r=rename / ctrl-a=new / ctrl-x=close' \
+    --expect=ctrl-r,ctrl-a,ctrl-x)
 
   # fzf exited with no output (Esc/Ctrl-C)
   [ -z "$output" ] && exit 0
@@ -97,6 +97,8 @@ while true; do
       tmux switch-client -t "$new_session"
       exit 0
     fi
+  elif [ "$key" = "ctrl-x" ]; then
+    [ -n "$session" ] && tmux kill-session -t "$session"
   elif [ "$key" = "ctrl-r" ]; then
     printf "Rename '%s' to: " "$session"
     read -r new_name
