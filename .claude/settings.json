@@ -1,24 +1,36 @@
 {
-  "model": "us.anthropic.claude-opus-4-6-v1",
-  "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-  "teammateMode": "tmux",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(~/.config/scripts/workflow-status.sh *)",
+      "Bash(git push *)",
+      "Bash(gh pr create *)"
+    ]
+  },
+  "model": "global.anthropic.claude-opus-4-6-v1",
   "hooks": {
     "UserPromptSubmit": [
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh working"
+            "command": "~/.config/tmux/claude-status-hook.sh working",
+            "timeout": 2
           }
         ]
       }
     ],
     "Stop": [
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh done"
+            "command": "~/.config/tmux/claude-status-hook.sh done",
+            "timeout": 2
           }
         ]
       }
@@ -29,7 +41,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh idle"
+            "command": "~/.config/tmux/claude-status-hook.sh idle",
+            "timeout": 2
           }
         ]
       },
@@ -38,20 +51,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh permission"
+            "command": "~/.config/tmux/claude-status-hook.sh permission",
+            "timeout": 2
           }
         ]
       }
     ],
     "SessionEnd": [
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh ended"
+            "command": "~/.config/tmux/claude-status-hook.sh ended",
+            "timeout": 2
           }
         ]
       }
     ]
-  }
+  },
+  "tui": "fullscreen",
+  "teammateMode": "tmux"
 }

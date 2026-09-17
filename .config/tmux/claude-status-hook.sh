@@ -17,3 +17,30 @@ else
   mkdir -p "$status_dir"
   printf '%s\n%s\n' "$status" "$(date +%s)" > "$status_file"
 fi
+
+# Update tmux window-level @claude-status option
+window_target=$(tmux display-message -t "$TMUX_PANE" -p '#{window_id}' 2>/dev/null) || exit 0
+
+# Collect pane IDs in this window
+pane_ids=$(tmux list-panes -t "$window_target" -F '#{pane_id}' 2>/dev/null) || exit 0
+
+# Find highest-priority status across all Claude panes in this window
+# Priority: permission > working > idle > done
+best=""
+for pid in $pane_ids; do
+  f="$status_dir/${pid#%}"
+  [ -f "$f" ] || continue
+  s=$(head -1 "$f")
+  case "$s" in
+    permission) best="permission"; break ;;
+    working)    [ "$best" != "permission" ] && best="working" ;;
+    idle)       [ "$best" = "done" ] || [ -z "$best" ] && best="idle" ;;
+    done)       [ -z "$best" ] && best="done" ;;
+  esac
+done
+
+if [ -n "$best" ]; then
+  tmux set-option -w -t "$window_target" @claude-status "$best" 2>/dev/null
+else
+  tmux set-option -wu -t "$window_target" @claude-status 2>/dev/null
+fi

@@ -53,11 +53,74 @@ get_session_claude_status() {
   [ -n "$best" ] && echo "$best"
 }
 
+# Checks if any pane in a session has a "dev start webpack" descendant process
+get_session_webpack_status() {
+  local session="$1"
+  local pane_pids
+  pane_pids=$(tmux list-panes -s -t "$session" -F '#{pane_pid}' 2>/dev/null)
+  [ -z "$pane_pids" ] && return
+
+  local dev_pids
+  dev_pids=$(pgrep -f "dev start webpack" 2>/dev/null)
+  [ -z "$dev_pids" ] && return
+
+  # Walk each dev process up the parent chain to see if it's under a session pane
+  for dev_pid in $dev_pids; do
+    local pid="$dev_pid"
+    while [ "$pid" -gt 1 ] 2>/dev/null; do
+      if echo "$pane_pids" | grep -qx "$pid"; then
+        echo "running"
+        return
+      fi
+      pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+    done
+  done
+}
+
 format_claude_status() {
   case "$1" in
     working)    printf ' \033[36m⟳ claude: working...\033[0m' ;;
     done)       printf ' \033[32m✓ claude: responded\033[0m' ;;
     permission) printf ' \033[31m⚠ claude: action required\033[0m' ;;
+  esac
+}
+
+get_session_workflow_status() {
+  local session="$1"
+  local status_dir="/tmp/claude-workflow-status"
+  local status_file="$status_dir/$session"
+  [ -f "$status_file" ] || return
+
+  local status pr
+  status=$(grep '^status: ' "$status_file" | cut -d' ' -f2-)
+  pr=$(grep '^pr: ' "$status_file" | cut -d' ' -f2-)
+
+  [ -n "$status" ] && echo "$status|$pr"
+}
+
+format_workflow_status() {
+  local input="$1"
+  local status="${input%%|*}"
+  local pr="${input#*|}"
+  local pr_label=""
+
+  if [ -n "$pr" ] && [ "$pr" != "$status" ]; then
+    pr_label="$pr"
+  fi
+
+  case "$status" in
+    implementing)      printf ' \033[33m🔨 implementing\033[0m' ;;
+    testing)           printf ' \033[33m🧪 testing\033[0m' ;;
+    pushing)           printf ' \033[33m⬆ pushing\033[0m' ;;
+    waiting-ci)        printf ' \033[36m⏳ CI running%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    fixing-ci)         printf ' \033[31m🔧 fixing CI%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    ci-stuck)          printf ' \033[31m✗ CI stuck%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    waiting-author-comments) printf ' \033[36m👀 awaiting comments%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    waiting-on-review) printf ' \033[32m✓ review%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    has-comments)      printf ' \033[35m💬 comments%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    spike-done)        printf ' \033[32m✓ spike done%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    merged)            printf ' \033[32m🎉 merged%s\033[0m' "${pr_label:+ $pr_label}" ;;
+    error)             printf ' \033[31m✗ error\033[0m' ;;
   esac
 }
 
@@ -69,12 +132,19 @@ generate_entries() {
     branch=$(git -C "$path" branch --show-current 2>/dev/null || echo "")
     commit=$(git -C "$path" log --oneline -1 2>/dev/null || echo "(no git repo)")
     claude_status=$(get_session_claude_status "$session")
-    claude_indicator=$(format_claude_status "$claude_status")
-    if [ -n "$claude_status" ]; then
-      printf "%s\n  \033[33m%s\033[0m \033[90m%s\033[0m\n  %b\0" "$session" "$branch" "$commit" "$claude_indicator"
-    else
-      printf "%s\n  \033[33m%s\033[0m \033[90m%s\033[0m\0" "$session" "$branch" "$commit"
-    fi
+    webpack_status=$(get_session_webpack_status "$session")
+    workflow_status=$(get_session_workflow_status "$session")
+
+    local webpack_indicator=""
+    [ -n "$webpack_status" ] && webpack_indicator=" \033[35m▶ webpack\033[0m"
+
+    local claude_indicator=""
+    [ -n "$claude_status" ] && claude_indicator="\n  $(format_claude_status "$claude_status")"
+
+    local workflow_indicator=""
+    [ -n "$workflow_status" ] && workflow_indicator="\n  $(format_workflow_status "$workflow_status")"
+
+    printf "%s%b\n  \033[33m%s\033[0m \033[90m%s\033[0m%b%b\0" "$session" "$webpack_indicator" "$branch" "$commit" "$claude_indicator" "$workflow_indicator"
   done
 }
 
@@ -87,13 +157,13 @@ while true; do
   [ -z "$output" ] && exit 0
 
   key=$(echo "$output" | head -1)
-  session=$(echo "$output" | sed -n '2p')
+  session=$(echo "$output" | sed -n '2p' | awk '{print $1}')
 
   if [ "$key" = "ctrl-a" ]; then
     printf "Session name (empty to cancel): "
     read -r new_session
     if [ -n "$new_session" ]; then
-      tmux new-session -d -s "$new_session"
+      tmux new-session -d -s "$new_session" -c "$(tmux display-message -p '#{pane_current_path}')"
       tmux switch-client -t "$new_session"
       exit 0
     fi
