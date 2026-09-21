@@ -1,12 +1,36 @@
 ## Installation
 
-### One-command setup (new machine)
+### First time setup (new machine or container)
+
+**Prerequisites:** `git` and `curl` must be available. On a minimal Docker container, run `apt-get update && apt-get install -y git curl` first.
+
+**1. Install chezmoi and apply dotfiles:**
 
 ```
 mkdir -p ~/.config && sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply bingcao/dotfiles
 ```
 
-chezmoi will prompt for your name, email, whether this is a work machine, and git branch prefix on first run.
+You'll be prompted for:
+- **Your full name** — used in git config
+- **Your git email** — used in git config
+- **Is this a work machine** — enables work-specific shell config
+- **Git branch prefix** — prepended to branches in lazygit (leave empty for none)
+
+**2. Start zsh:**
+
+```
+zsh
+```
+
+To make zsh your default shell:
+
+```
+chsh -s $(which zsh)
+```
+
+**3. Install tmux plugins** (first time opening tmux):
+
+Press `prefix + I` (Ctrl-b then Shift-i) to install tmux plugins via tpm.
 
 ### From a local clone
 
@@ -14,9 +38,17 @@ chezmoi will prompt for your name, email, whether this is a work machine, and gi
 chezmoi init --apply --source ~/dotfiles
 ```
 
+### Updating
+
+After pulling changes to the dotfiles repo:
+
+```
+chezmoi apply
+```
+
 ### What gets installed
 
-**CLI tools:** neovim, tmux, fzf, eza, bat, zoxide, yazi, lazygit, delta, oh-my-posh, jq
+**CLI tools:** zsh, neovim, tmux, fzf, eza, bat, zoxide, yazi, lazygit, delta, oh-my-posh, jq, Claude Code
 
 **macOS desktop:** Ghostty, AeroSpace, SketchyBar, borders
 
