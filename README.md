@@ -3,7 +3,7 @@
 ### One-command setup (new machine)
 
 ```
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply bingcao/dotfiles
+mkdir -p ~/.config && sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply bingcao/dotfiles
 ```
 
 chezmoi will prompt for your name, email, whether this is a work machine, and git branch prefix on first run.
