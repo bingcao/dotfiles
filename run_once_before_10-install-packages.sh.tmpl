@@ -33,7 +33,7 @@ $SUDO apt-get install -y \
 if ! command -v eza &>/dev/null; then
     echo "Installing eza..."
     $SUDO mkdir -p /etc/apt/keyrings
-    curl -fsSL https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | $SUDO gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+    curl -fsSL https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | $SUDO gpg --batch --yes --dearmor -o /etc/apt/keyrings/gierens.gpg
     echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | $SUDO tee /etc/apt/sources.list.d/gierens.list
     $SUDO apt-get update
     $SUDO apt-get install -y eza
