@@ -16,6 +16,14 @@ if [ "$(id -u)" -ne 0 ] && command -v sudo &>/dev/null; then
     SUDO="sudo"
 fi
 
+ARCH="$(uname -m)"
+case "$ARCH" in
+    x86_64)  ARCH_DEB="amd64"; ARCH_GO="x86_64"; ARCH_YAZI="x86_64-unknown-linux-gnu" ;;
+    aarch64) ARCH_DEB="arm64"; ARCH_GO="arm64";   ARCH_YAZI="aarch64-unknown-linux-gnu" ;;
+    arm64)   ARCH_DEB="arm64"; ARCH_GO="arm64";   ARCH_YAZI="aarch64-unknown-linux-gnu" ;;
+    *)       echo "Unsupported architecture: $ARCH"; exit 1 ;;
+esac
+
 echo "Installing base packages via apt..."
 $SUDO apt-get update
 $SUDO apt-get install -y \
@@ -46,16 +54,16 @@ fi
 
 if ! command -v yazi &>/dev/null; then
     echo "Installing yazi..."
-    curl -sSfL https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-gnu.zip -o /tmp/yazi.zip
+    curl -sSfL "https://github.com/sxyazi/yazi/releases/latest/download/yazi-${ARCH_YAZI}.zip" -o /tmp/yazi.zip
     unzip -o /tmp/yazi.zip -d /tmp/yazi
-    $SUDO mv /tmp/yazi/yazi-x86_64-unknown-linux-gnu/yazi /usr/local/bin/
+    $SUDO mv "/tmp/yazi/yazi-${ARCH_YAZI}/yazi" /usr/local/bin/
     rm -rf /tmp/yazi /tmp/yazi.zip
 fi
 
 if ! command -v lazygit &>/dev/null; then
     echo "Installing lazygit..."
     LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-    curl -sSfLo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    curl -sSfLo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_${ARCH_GO}.tar.gz"
     tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
     $SUDO install /tmp/lazygit /usr/local/bin
     rm -f /tmp/lazygit /tmp/lazygit.tar.gz
@@ -64,7 +72,7 @@ fi
 if ! command -v delta &>/dev/null; then
     echo "Installing delta..."
     DELTA_VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
-    curl -sSfLo /tmp/delta.deb "https://github.com/dandavison/delta/releases/latest/download/git-delta_${DELTA_VERSION}_amd64.deb"
+    curl -sSfLo /tmp/delta.deb "https://github.com/dandavison/delta/releases/latest/download/git-delta_${DELTA_VERSION}_${ARCH_DEB}.deb"
     $SUDO dpkg -i /tmp/delta.deb
     rm -f /tmp/delta.deb
 fi
