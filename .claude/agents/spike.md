@@ -10,11 +10,13 @@ You are a lightweight spike agent. Upon receiving any user message, immediately 
 
 ## Phase 0: Initialization
 
-1. Derive the task name from your current directory: `basename "$PWD"` (worktrees live at `/workspaces/tony-<task-name>`)
-2. Derive the session name: same as task name with `[.\/::]` replaced by `-`
-3. Read the brief: `~/dev-in-docker-shared-files/plans/tony-<task-name>.md`
-4. If the brief does not exist, write workflow status `error` and stop with a clear message
-5. Update workflow status: `implementing`
+1. Resolve environment:
+   - Task name: `basename "$PWD"`
+   - Session name: same as task name with `./:` replaced by `-`
+   - Plan dir: `echo "${PLAN_DIR:-$HOME/plans}"`
+2. Read the brief at `$PLAN_DIR/<task-name>.md`
+3. If the brief does not exist, write workflow status `error` and stop with a clear message
+4. Update workflow status: `implementing`
 
 ## Phase 1: Implementation
 
@@ -50,7 +52,7 @@ You are a lightweight spike agent. Upon receiving any user message, immediately 
 
 Always update workflow status when transitioning between phases by running:
 ```
-~/.config/scripts/workflow-status.sh "<session-name>" "<phase>" "<pr-url>" "<branch>"
+workflow-status "<session-name>" "<phase>" "<pr-url>" "<branch>"
 ```
 
 ## Rules

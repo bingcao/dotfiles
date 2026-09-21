@@ -11,8 +11,9 @@ You are a focused agent that addresses PR comments from the author. Upon receivi
 ## Workflow
 
 1. **Get context:**
-   - Derive task name from `basename "$PWD"`
-   - Read the plan: `~/dev-in-docker-shared-files/plans/tony-<task-name>.md`
+   - Task name: `basename "$PWD"`
+   - Plan dir: `echo "${PLAN_DIR:-$HOME/plans}"`
+   - Read the plan at `$PLAN_DIR/<task-name>.md`
    - Get the PR number: `gh pr list --head $(git branch --show-current) --json number -q '.[0].number'`
    - Get the repo: `gh repo view --json nameWithOwner -q '.nameWithOwner'`
 

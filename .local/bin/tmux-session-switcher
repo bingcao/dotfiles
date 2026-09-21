@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # tmux session switcher with fzf
-# enter=switch, ctrl-r=rename, ctrl-a=new
+# enter=switch, ctrl-r=rename, ctrl-a=new, ctrl-x=close
 # Shows HEAD commit message and Claude status under each session name
 
 STATUS_DIR="/tmp/claude-tmux-status"
 
-# Remove status files whose pane no longer exists in any session
 sweep_orphan_status_files() {
   [ -d "$STATUS_DIR" ] || return
   local active_panes
@@ -19,8 +18,6 @@ sweep_orphan_status_files() {
   done
 }
 
-# Returns the highest-priority Claude status across all panes in a session
-# Priority: permission > working > idle > done
 get_session_claude_status() {
   local session="$1"
   [ -d "$STATUS_DIR" ] || return
@@ -35,7 +32,6 @@ get_session_claude_status() {
     local file="$STATUS_DIR/$id"
     [ -f "$file" ] || continue
 
-    # Staleness: if the pane isn't running claude, clean up
     if [ "$cmd" != "claude" ]; then
       rm -f "$file"
       continue
@@ -53,7 +49,6 @@ get_session_claude_status() {
   [ -n "$best" ] && echo "$best"
 }
 
-# Checks if any pane in a session has a "dev start webpack" descendant process
 get_session_webpack_status() {
   local session="$1"
   local pane_pids
@@ -64,7 +59,6 @@ get_session_webpack_status() {
   dev_pids=$(pgrep -f "dev start webpack" 2>/dev/null)
   [ -z "$dev_pids" ] && return
 
-  # Walk each dev process up the parent chain to see if it's under a session pane
   for dev_pid in $dev_pids; do
     local pid="$dev_pid"
     while [ "$pid" -gt 1 ] 2>/dev/null; do
@@ -153,7 +147,6 @@ while true; do
     --header 'enter=switch / ctrl-r=rename / ctrl-a=new / ctrl-x=close' \
     --expect=ctrl-r,ctrl-a,ctrl-x)
 
-  # fzf exited with no output (Esc/Ctrl-C)
   [ -z "$output" ] && exit 0
 
   key=$(echo "$output" | head -1)

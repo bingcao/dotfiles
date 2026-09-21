@@ -11,7 +11,9 @@ Determine the actual workflow status of session(s) by inspecting git state, PR s
 
 ### Single session (default — uses current session or a named one)
 
-1. **Determine the session** — if in a worktree (`/workspaces/<name>`), use that. Otherwise ask which session to check.
+Resolve: `WORKTREE_ROOT="${WORKTREE_ROOT:-$HOME/worktrees}"`.
+
+1. **Determine the session** — if in a worktree under `$WORKTREE_ROOT`, use `basename "$PWD"`. Otherwise ask which session to check.
 2. **Detect actual state** by running the checks below in order (first match wins):
    - No commits ahead of base branch → `implementing` (work hasn't started or was reset)
    - Commits exist but no PR → `pushing` (code written but not pushed)
@@ -27,7 +29,7 @@ Determine the actual workflow status of session(s) by inspecting git state, PR s
 ### All sessions (when user says "all" or "sync all")
 
 1. **List all workflow status files** in `/tmp/claude-workflow-status/`
-2. **Also scan `/workspaces/`** for worktrees that might not have a status file yet
+2. **Also scan `$WORKTREE_ROOT/`** for worktrees that might not have a status file yet
 3. **Run the single-session detection** for each
 4. **Report** a summary table of all sessions and any status changes made
 
@@ -35,10 +37,10 @@ Determine the actual workflow status of session(s) by inspecting git state, PR s
 
 ```bash
 # Get branch name
-git -C /workspaces/<name> branch --show-current
+git -C $WORKTREE_ROOT/<name> branch --show-current
 
 # Check commits ahead
-git -C /workspaces/<name> log --oneline origin/dev..HEAD
+git -C $WORKTREE_ROOT/<name> log --oneline origin/dev..HEAD
 
 # Find PR for branch
 gh pr list --head <branch> --json number,state,url -q '.[0]'
@@ -50,7 +52,7 @@ gh pr view <number> --json state,reviewDecision,statusCheckRollup \
 
 ## Rules
 
-- Always use `~/.config/scripts/workflow-status.sh` to write updates
+- Always use `workflow-status` to write updates (the command is on PATH)
 - If a worktree no longer exists but a status file does, remove the status file
 - If no PR exists and no commits exist AND no worktree exists, remove the status file (orphaned)
 - If no PR exists and no commits exist BUT the worktree exists, skip it (fresh session, not yet started)

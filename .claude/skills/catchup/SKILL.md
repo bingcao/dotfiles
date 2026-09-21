@@ -9,13 +9,14 @@ Quickly load all relevant context for the current worktree so you can start iter
 
 ## Workflow
 
-1. **Determine the task** — derive from `basename "$PWD"` (expects `/workspaces/tony-<task>`)
-2. **Read the plan** — `~/dev-in-docker-shared-files/plans/tony-<task>.md`
-3. **Show git state:**
+1. **Determine the task** — derive from `basename "$PWD"`
+2. **Resolve plan dir** — `PLAN_DIR="${PLAN_DIR:-$HOME/plans}"`
+3. **Read the plan** — `$PLAN_DIR/<task-name>.md`
+4. **Show git state:**
    - Current branch: `git branch --show-current`
    - Commits ahead of base: `git log --oneline origin/dev..HEAD` (or the plan's base branch)
    - Uncommitted changes: `git status --short`
-4. **Check for a PR:**
+5. **Check for a PR:**
    - `gh pr list --head <branch> --json number,url,state,isDraft,title -q '.[0]'`
    - If PR exists:
      - Show title, state, draft status
@@ -23,9 +24,9 @@ Quickly load all relevant context for the current worktree so you can start iter
      - Show open comments: `gh api repos/{owner}/{repo}/pulls/<number>/comments --jq '[.[] | {user: .user.login, body: .body[:100], path: .path, line: .line}]'`
      - Show issue-level comments: `gh api repos/{owner}/{repo}/issues/<number>/comments --jq '[.[] | {user: .user.login, body: .body[:100]}]'`
      - Show review status: `gh pr view <number> --json reviewDecision -q '.reviewDecision'`
-5. **Present a summary** — concise, scannable:
+6. **Present a summary** — concise, scannable:
    ```
-   ## Task: tony-<task>
+   ## Task: <task-name>
    **Plan:** <one-line summary from plan>
    **Branch:** <branch> (<N> commits ahead of <base>)
    **PR:** #<number> — <state> <draft?> <CI status>
@@ -41,7 +42,7 @@ Quickly load all relevant context for the current worktree so you can start iter
    ### CI failures (if any)
    <failed check names>
    ```
-6. **Ask:** "What would you like to do?" — then follow the user's direction
+7. **Ask:** "What would you like to do?" — then follow the user's direction
 
 ## Rules
 

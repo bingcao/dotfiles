@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+# tw - Git worktree + tmux session manager
+#
+# Environment variables:
+#   WORKTREE_ROOT   — where worktrees are created (default: ~/worktrees)
+#   MAIN_TREE_ROOT  — main git repo root (default: auto-detect from git)
+#   PLAN_DIR        — where plan files live (default: ~/plans)
+#
+# Post-create hook:
+#   If ~/.config/tw/post-create exists and is executable, it runs after
+#   worktree creation with the worktree path as $1. Use this for
+#   environment-specific setup (copying env files, installing deps, etc.)
+
+set -euo pipefail
+
+WORKTREE_ROOT="${WORKTREE_ROOT:-$HOME/worktrees}"
+PLAN_DIR="${PLAN_DIR:-$HOME/plans}"
+
+resolve_main_tree() {
+  if [[ -n "${MAIN_TREE_ROOT:-}" ]]; then
+    echo "$MAIN_TREE_ROOT"
+  else
+    git rev-parse --show-toplevel 2>/dev/null || { echo "Error: not in a git repo and MAIN_TREE_ROOT not set" >&2; return 1; }
+  fi
+}
+
+wt_require_main_tree() {
+  local main_tree
+  main_tree="$(resolve_main_tree)" || return 1
+  if [[ "$(git -C "$main_tree" rev-parse --is-inside-work-tree 2>/dev/null)" == "true" ]] && \
+     [[ -n "$(git -C "$main_tree" rev-parse --git-common-dir 2>/dev/null)" ]] && \
+     [[ "$(git -C "$main_tree" rev-parse --git-dir)" != "$(git -C "$main_tree" rev-parse --git-common-dir)" ]]; then
+    echo "Error: MAIN_TREE_ROOT ($main_tree) is inside a worktree, not the main tree." >&2
+    return 1
+  fi
+  return 0
+}
+
+wt_add() {
+  local name="$1" branch="${2:-$1}" start="${3:-HEAD}"
+  local main_tree
+  main_tree="$(resolve_main_tree)" || return 1
+
+  if git -C "$main_tree" rev-parse --verify "$branch" &>/dev/null; then
+    git -C "$main_tree" worktree add "$WORKTREE_ROOT/$name" "$branch"
+  else
+    git -C "$main_tree" worktree add "$WORKTREE_ROOT/$name" -b "$branch" "$start"
+  fi
+
+  # Run post-create hook if it exists
+  if [[ -x "$HOME/.config/tw/post-create" ]]; then
+    "$HOME/.config/tw/post-create" "$WORKTREE_ROOT/$name"
+  fi
+}
+
+wt_remove() {
+  local main_tree
+  main_tree="$(resolve_main_tree)" || return 1
+  git -C "$main_tree" worktree remove "$WORKTREE_ROOT/$1"
+}
+
+wt_list() {
+  local main_tree
+  main_tree="$(resolve_main_tree 2>/dev/null)" || main_tree=""
+  if [[ -n "$main_tree" ]]; then
+    git -C "$main_tree" worktree list
+  else
+    echo "(not in a git repo)"
+  fi
+}
+
+session_name_from() {
+  printf '%s' "$1" | tr './:' '-'
+}
+
+# --- Main ---
+
+name="" branch="" subdir="" agent="" base=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      cat <<'HELP'
+Usage: tw [name] [branch] [-b <base>] [-p <subdir>] [-a <agent>]
+
+Git worktree + tmux session manager.
+
+Commands:
+  tw                          List worktrees and tmux sessions
+  tw <name>                   Switch to session, or create worktree + session
+  tw <name> <branch>          Create worktree from existing branch with a custom name
+  tw <name> -b <base>         Create new branch starting from base (for stacking)
+  tw <name> -a <agent>        Create worktree and launch Claude with specified agent
+  tw -d <name>                Delete worktree and kill its tmux session
+
+Options:
+  -a <agent>          Launch Claude with this agent type
+  -b <base>           Create new branch from this base branch (for stacked PRs)
+  -p <subdir>         Start tmux windows in this subdirectory of the worktree
+  -h, --help          Show this help message
+
+Environment:
+  WORKTREE_ROOT       Where worktrees are created (default: ~/worktrees)
+  MAIN_TREE_ROOT      Main git repo root (default: auto-detect)
+  PLAN_DIR            Where plan files live (default: ~/plans)
+
+When creating a new session, tw sets up four tmux windows:
+  claude  - Opens claude (or claude --agent <agent> if -a specified)
+  git     - Opens lazygit
+  nvim    - Opens neovim
+  cmd     - Empty shell
+HELP
+      exit 0
+      ;;
+    -d)
+      target="$2"
+      target_session="$(session_name_from "$target")"
+      main_tree="$(resolve_main_tree)" || exit 1
+      echo "This will:"
+      tmux has-session -t "$target_session" 2>/dev/null && echo "  - Kill tmux session '$target_session'"
+      [[ -d "$WORKTREE_ROOT/$target" ]] && echo "  - Remove worktree $WORKTREE_ROOT/$target"
+      git -C "$main_tree" rev-parse --verify "$target" &>/dev/null && echo "  - Delete local branch '$target'"
+      printf "Proceed? [y/N] "
+      read -r confirm
+      if [[ "$confirm" != [yY] ]]; then
+        exit 0
+      fi
+      tmux kill-session -t "$target_session" 2>/dev/null || true
+      wt_remove "$target" 2>/dev/null || true
+      git -C "$main_tree" branch -D "$target" 2>/dev/null || true
+      exit $?
+      ;;
+    -a)
+      agent="$2"
+      shift 2
+      ;;
+    -b)
+      base="$2"
+      shift 2
+      ;;
+    -p)
+      subdir="$2"
+      shift 2
+      ;;
+    *)
+      if [[ -z "$name" ]]; then
+        name="$1"
+      else
+        branch="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+session_name="$(session_name_from "${name:-}")"
+
+# No args: list worktrees and sessions
+if [[ -z "$name" ]]; then
+  echo "Worktrees:"
+  wt_list
+  printf "\nSessions:\n"
+  tmux list-sessions 2>/dev/null || echo "(none)"
+  exit 0
+fi
+
+# Session already exists: just switch
+if tmux has-session -t "$session_name" 2>/dev/null; then
+  if [[ -n "${TMUX:-}" ]]; then
+    tmux switch-client -t "$session_name"
+  else
+    tmux attach -t "$session_name"
+  fi
+  exit 0
+fi
+
+# Worktree doesn't exist: create it
+if [[ ! -d "$WORKTREE_ROOT/$name" ]]; then
+  wt_require_main_tree || exit 1
+  main_tree="$(resolve_main_tree)"
+  branch="${branch:-$name}"
+
+  local_start_point=""
+  if [[ -n "$base" ]]; then
+    local_start_point="$(git -C "$main_tree" rev-parse "$base" 2>/dev/null || git -C "$main_tree" rev-parse "origin/$base" 2>/dev/null)"
+    echo -e "Creating branch \033[1;33m$branch\033[0m from \033[33m$base\033[0m"
+  else
+    if ! git -C "$main_tree" rev-parse --verify "$branch" &>/dev/null && \
+       ! git -C "$main_tree" rev-parse --verify "origin/$branch" &>/dev/null; then
+      start_ref="$(git -C "$main_tree" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "HEAD")"
+      echo -e "Creating branch \033[1;33m$branch\033[0m from \033[33m$start_ref\033[0m"
+    fi
+    local_start_point="$(git -C "$main_tree" rev-parse HEAD 2>/dev/null)"
+  fi
+  wt_add "$name" "$branch" "$local_start_point"
+fi
+
+# Create tmux session with window layout
+wt_path="$WORKTREE_ROOT/$name${subdir:+/$subdir}"
+tmux new-session -d -s "$session_name" -c "$wt_path" -n "claude"
+
+if [[ -n "$agent" ]]; then
+  tmux rename-window -t "${session_name}" "auto"
+  if [[ "$agent" == "implementor" ]]; then
+    tmux send-keys -t "${session_name}:auto" "pr-watcher --implement ${session_name} ${name} ${name}" Enter
+  else
+    tmux send-keys -t "${session_name}:auto" "claude --agent $agent --allowedTools 'Bash Read Write Edit Grep Glob Skill'" Enter
+    for i in $(seq 1 30); do
+      if tmux capture-pane -t "${session_name}:auto" -p 2>/dev/null | grep -qE '❯|>'; then
+        break
+      fi
+      sleep 1
+    done
+    tmux send-keys -t "${session_name}:auto" "begin" Enter
+  fi
+  tmux new-window -t "$session_name" -n "claude" -c "$wt_path"
+  tmux send-keys -t "${session_name}:claude" "claude" Enter
+else
+  tmux send-keys -t "${session_name}:claude" "claude" Enter
+fi
+
+tmux new-window -t "$session_name" -n "git" -c "$wt_path"
+tmux send-keys -t "${session_name}:git" "lazygit" Enter
+tmux new-window -t "$session_name" -n "nvim" -c "$wt_path"
+tmux send-keys -t "${session_name}:nvim" "nvim" Enter
+tmux new-window -t "$session_name" -n "cmd" -c "$wt_path"
+tmux select-window -t "${session_name}:claude"
+
+if [[ -z "$agent" ]]; then
+  if [[ -n "${TMUX:-}" ]]; then
+    tmux switch-client -t "$session_name"
+  else
+    tmux attach -t "$session_name"
+  fi
+fi

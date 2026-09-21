@@ -16,17 +16,17 @@ This skill is invoked mid-conversation, after you have discussed the work with t
    - User wants to create a new ticket → create one, then include the new ticket ID
    - No ticket needed → omit the JIRA section
 4. **Show the brief** to the user for quick confirmation (no need for plan mode — just show it inline)
-5. **On confirmation**, save the brief to `~/dev-in-docker-shared-files/plans/tony-<task-name>.md`
+5. **On confirmation**, resolve plan dir (`PLAN_DIR="${PLAN_DIR:-$HOME/plans}"`) and save the brief to `$PLAN_DIR/<task-name>.md`
 6. **Spawn the spike agent**:
    ```
-   tw tony-<task-name> -a spike
+   tw <task-name> -a spike
    ```
    Use `timeout: 600000` on the Bash tool call.
-7. **Report:** "Spike spawned in session `tony-<task-name>`."
+7. **Report:** "Spike spawned in session `<task-name>`."
 
 ## Brief Format
 
-Write to `~/dev-in-docker-shared-files/plans/tony-<task-name>.md`:
+Save to `$PLAN_DIR/<task-name>.md`:
 
 ```markdown
 # <Task Title>
@@ -47,7 +47,7 @@ What we're building and why, in 2-3 sentences.
 - Any constraints or gotchas worth noting
 
 ## PR Details
-- **Branch:** `tony-<task-name>`
+- **Branch:** `<task-name>`
 - **Title:** `<short PR title> BNCH-XXXXX`
 - **Body:** `<one-line description>`
 ```
@@ -55,8 +55,6 @@ What we're building and why, in 2-3 sentences.
 If there is no JIRA ticket, omit the JIRA section and the ticket suffix from the PR title.
 
 ## Rules
-
-**Important:** Always prefix task names with `tony-` for branches, worktrees, sessions, and plan files.
 
 **CRITICAL: After the user confirms the brief, NEVER implement it yourself.** Save the file and spawn the spike agent. That's it.
 

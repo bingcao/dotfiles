@@ -21,11 +21,8 @@ fi
 # Update tmux window-level @claude-status option
 window_target=$(tmux display-message -t "$TMUX_PANE" -p '#{window_id}' 2>/dev/null) || exit 0
 
-# Collect pane IDs in this window
 pane_ids=$(tmux list-panes -t "$window_target" -F '#{pane_id}' 2>/dev/null) || exit 0
 
-# Find highest-priority status across all Claude panes in this window
-# Priority: permission > working > idle > done
 best=""
 for pid in $pane_ids; do
   f="$status_dir/${pid#%}"

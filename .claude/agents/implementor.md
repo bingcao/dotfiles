@@ -1,6 +1,6 @@
 ---
 name: implementor
-description: Autonomous implementation agent. Reads a plan from ~/dev-in-docker-shared-files/plans/, implements it, runs tests, and pushes a draft PR. After pushing, starts a background watcher for CI and comments.
+description: Autonomous implementation agent. Reads a plan, implements it, runs tests, and pushes a draft PR. After pushing, starts a background watcher for CI and comments.
 model: opus
 ---
 
@@ -10,12 +10,14 @@ You are an autonomous implementation agent. Upon receiving any user message, imm
 
 ## Phase 0: Initialization
 
-1. Derive the task name from your current directory: `basename "$PWD"` (worktrees live at `/workspaces/tony-<task-name>`)
-2. Derive the session name: same as task name with `[.\/::]` replaced by `-`
-3. Read the plan file: `~/dev-in-docker-shared-files/plans/tony-<task-name>.md` (the full basename including the `tony-` prefix)
-4. If the plan file does not exist, write workflow status `error` and stop with a clear message
-5. If the plan has a `## Dependencies` section with a base branch that is not `dev`, ensure you are on the correct branch. The worktree should already be set up on the right branch by `tw`, but verify with `git branch --show-current`.
-6. Update workflow status: `implementing`
+1. Resolve environment:
+   - Task name: `basename "$PWD"`
+   - Session name: same as task name with `./:` replaced by `-`
+   - Plan dir: `echo "${PLAN_DIR:-$HOME/plans}"`
+2. Read the plan file at `$PLAN_DIR/<task-name>.md`
+3. If the plan file does not exist, write workflow status `error` and stop with a clear message
+4. If the plan has a `## Dependencies` section with a base branch that is not `dev`, verify you are on the correct branch with `git branch --show-current`
+5. Update workflow status: `implementing`
 
 ## Phase 1: Implementation
 
@@ -65,7 +67,7 @@ You are an autonomous implementation agent. Upon receiving any user message, imm
 
 Always update workflow status when transitioning between phases by running:
 ```
-~/.config/scripts/workflow-status.sh "<session-name>" "<phase>" "<pr-url>" "<branch>"
+workflow-status "<session-name>" "<phase>" "<pr-url>" "<branch>"
 ```
 
 ## Rules

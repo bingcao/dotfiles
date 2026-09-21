@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Writes workflow status for a session to /tmp/claude-workflow-status/
-# Usage: workflow-status.sh <session-name> <phase> [pr-url] [branch]
+# Usage: workflow-status <session-name> <phase> [pr-url] [branch]
 
 session="$1"
 phase="$2"

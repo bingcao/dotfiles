@@ -4,7 +4,7 @@
   },
   "permissions": {
     "allow": [
-      "Bash(~/.config/scripts/workflow-status.sh *)",
+      "Bash(workflow-status *)",
       "Bash(git push *)",
       "Bash(gh pr create *)"
     ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh working",
+            "command": "claude-status-hook working",
             "timeout": 2
           }
         ]
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh done",
+            "command": "claude-status-hook done",
             "timeout": 2
           }
         ]
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh idle",
+            "command": "claude-status-hook idle",
             "timeout": 2
           }
         ]
@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh permission",
+            "command": "claude-status-hook permission",
             "timeout": 2
           }
         ]
@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/tmux/claude-status-hook.sh ended",
+            "command": "claude-status-hook ended",
             "timeout": 2
           }
         ]

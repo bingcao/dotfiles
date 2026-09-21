@@ -3,6 +3,9 @@ if [ -d "/opt/homebrew/bin" ]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
+# Add user-local bin to path (for tw, pr-watcher, etc.)
+export PATH="$HOME/.local/bin:$PATH"
+
 export XDG_CONFIG_HOME="$HOME/.config"
 
 # Set where to store zinit and plugins

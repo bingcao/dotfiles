@@ -16,21 +16,23 @@ Scan plan dependency graphs and spawn implementors for tasks that are ready to s
 
 ### 1. Identify targets
 
+Resolve plan dir: `PLAN_DIR="${PLAN_DIR:-$HOME/plans}"` and worktree root: `WORKTREE_ROOT="${WORKTREE_ROOT:-$HOME/worktrees}"`.
+
 **No arguments given:**
-1. List all plan files matching `tony-*.md` in `~/dev-in-docker-shared-files/plans/`
+1. List all plan files (`*.md`) in `$PLAN_DIR`
 2. For each plan, parse the `## Dependencies` section to extract the `Depends on` value (task names or "none")
 3. Determine each task's current state by checking in order:
    - **Done**: `gh pr list --head <task-name> --json state -q '.[0].state'` returns `MERGED`
-   - **Active**: a worktree exists at `/workspaces/<task-name>` OR a tmux session exists OR an open PR exists
+   - **Active**: a worktree exists at `$WORKTREE_ROOT/<task-name>` OR a tmux session exists OR an open PR exists
    - **Candidate**: neither done nor active — eligible for spawning if deps are met
 4. For each candidate, check if ALL dependencies' PRs are merged
 5. Present the full graph:
    ```
-   ✓ tony-add-widget-api (done — PR #123 merged)
-   ⏳ tony-add-widget-ui (ready — deps satisfied, not yet spawned)
-   🔒 tony-add-widget-tests (blocked — waiting on tony-add-widget-ui)
-   🔄 tony-fix-sidebar (active — PR #456 open)
-   ○ tony-cleanup-utils (standalone — no deps, not yet spawned)
+   ✓ <task-a> (done — PR #123 merged)
+   ⏳ <task-b> (ready — deps satisfied, not yet spawned)
+   🔒 <task-c> (blocked — waiting on <task-b>)
+   🔄 <task-d> (active — PR #456 open)
+   ○ <task-e> (standalone — no deps, not yet spawned)
    ```
 6. Ask the user what to spawn (specific tasks or all ready)
 
@@ -48,15 +50,15 @@ For each dependency task name in the `Depends on` field:
 For each task being spawned:
 1. Determine the base branch from the plan's Dependencies section:
    - No dependencies → branch from `dev` (default `tw` behavior)
-   - Single dependency → pass the dependency branch: `tw tony-<task> -b tony-<parent-task> -a implementor`
+   - Single dependency → pass the dependency branch: `tw <task> -b <parent-task> -a implementor`
    - Multiple dependencies (all merged) → branch from `dev`
 2. Run:
    ```
-   tw tony-<task-name> -a implementor
+   tw <task-name> -a implementor
    ```
    Or with base branch for stacking (single dependency):
    ```
-   tw tony-<task-name> -b tony-<parent-task> -a implementor
+   tw <task-name> -b <parent-task> -a implementor
    ```
    Use `timeout: 600000` on Bash tool calls.
 

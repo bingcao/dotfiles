@@ -2,11 +2,11 @@
 # Watches a PR for CI results and author comments.
 # Runs Claude agents interactively when action is needed.
 #
-# Usage: pr-watcher.sh <session-name> <pr-number> <branch>
+# Usage: pr-watcher <session-name> <pr-number> <branch>
 #   Or to also run the implementor first:
-#        pr-watcher.sh --implement <session-name> <task-name> <branch>
+#        pr-watcher --implement <session-name> <task-name> <branch>
 #   Or to resume watching (auto-detects PR from branch):
-#        pr-watcher.sh --resume
+#        pr-watcher --resume
 
 set -u
 
@@ -22,14 +22,14 @@ fi
 
 if [ "$RESUME" = true ]; then
   BRANCH=$(git branch --show-current 2>/dev/null || echo "")
-  SESSION=$(basename "$PWD" | tr '.[/::' '-')
+  SESSION=$(basename "$PWD" | tr './:' '-')
   TASK_OR_PR=""
 else
   SESSION="$1"
   TASK_OR_PR="$2"
   BRANCH="${3:-}"
 fi
-STATUS_SCRIPT="$HOME/.config/scripts/workflow-status.sh"
+
 CI_FIX_ATTEMPTS=0
 MAX_CI_FIXES=3
 LAST_COMMENT_CHECK="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -61,7 +61,7 @@ wait_or_trigger() {
 }
 
 update_status() {
-  "$STATUS_SCRIPT" "$SESSION" "$1" "$PR_URL" "$BRANCH"
+  workflow-status "$SESSION" "$1" "$PR_URL" "$BRANCH"
 }
 
 send_begin() {
@@ -111,7 +111,6 @@ check_ci() {
   result=$(gh pr checks "$PR_NUMBER" 2>/dev/null)
   [ -z "$result" ] && return 2
 
-  # Exclude review-gate checks that are always pending on draft PRs
   local filtered
   filtered=$(echo "$result" | grep -v "check-reviews\|id-stale-reviews")
 
@@ -187,7 +186,6 @@ wait_or_trigger 60
 CI_PASSED=false
 
 while true; do
-  # Check for buffered keypress before slow API calls
   read -t 0 -n 1 -s buffered_key 2>/dev/null || true
   if [ -n "${buffered_key:-}" ]; then
     log "Agent menu (auto-resumes in 10s):"
@@ -202,21 +200,18 @@ while true; do
     esac
   fi
 
-  # Check if PR was merged/closed
   if check_merged; then
     update_status "merged"
     log "PR merged/closed. Watcher exiting."
     exit 0
   fi
 
-  # Check if PR is no longer draft
   if ! check_draft; then
     update_status "waiting-on-review"
     log "PR marked ready for review. Watcher exiting."
     exit 0
   fi
 
-  # Check for comments (always, regardless of CI state)
   log "Checking for comments (since $LAST_COMMENT_CHECK)..."
   if check_comments; then
     log "Comments detected."
@@ -235,13 +230,11 @@ while true; do
 
   log "No new comments."
 
-  # Check CI
   log "Checking CI..."
   check_ci
   ci_result=$?
 
   if [ $ci_result -eq 1 ]; then
-    # CI failed
     CI_PASSED=false
     CI_FIX_ATTEMPTS=$((CI_FIX_ATTEMPTS + 1))
     if [ $CI_FIX_ATTEMPTS -gt $MAX_CI_FIXES ]; then
@@ -261,7 +254,6 @@ while true; do
     continue
 
   elif [ $ci_result -eq 0 ]; then
-    # CI passed
     log "CI passed."
     if [ "$CI_PASSED" = false ]; then
       CI_PASSED=true
@@ -272,7 +264,6 @@ while true; do
     fi
 
   else
-    # CI still pending
     log "CI still pending."
     if [ "$CI_PASSED" = false ]; then
       update_status "waiting-ci"

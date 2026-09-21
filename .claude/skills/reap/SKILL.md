@@ -11,12 +11,14 @@ Check all active worktree sessions for merged or closed PRs, and clean up the on
 
 ### 1. Scan and gather state
 
+Resolve: `PLAN_DIR="${PLAN_DIR:-$HOME/plans}"` and `WORKTREE_ROOT="${WORKTREE_ROOT:-$HOME/worktrees}"`.
+
 1. **Scan workflow status files** at `/tmp/claude-workflow-status/` — for each, read the PR URL
 2. **Check PR state** for each tracked session:
    ```
    gh pr view <url> --json state -q '.state'
    ```
-3. **Also scan `/workspaces/`** for worktrees without status files — check if they have PRs:
+3. **Also scan `$WORKTREE_ROOT/`** for worktrees without status files — check if they have PRs:
    ```
    gh pr list --head <branch-name> --json state,url -q '.[0]'
    ```
@@ -28,18 +30,18 @@ Show findings grouped:
 
 ```
 Ready to clean up:
-  - tony-add-api — PR #123 merged
-  - tony-fix-bug — PR #456 closed
+  - <task-a> — PR #123 merged
+  - <task-b> — PR #456 closed
 
 Completed spikes:
-  - tony-spike-health — PR #321 spike-done
+  - <task-c> — PR #321 spike-done
 
 Stale status files (no worktree/session):
-  - tony-old-task
+  - <task-d>
 
 Still active:
-  - tony-add-ui — PR #789 open, waiting-on-review
-  - tony-add-tests — blocked
+  - <task-e> — PR #789 open, waiting-on-review
+  - <task-f> — blocked
 ```
 
 ### 3. Ask the user
@@ -49,8 +51,8 @@ Ask which to clean up (default: all merged/closed + all stale; spikes are listed
 ### 4. Clean up confirmed tasks
 
 For each confirmed task:
-1. Run `tw -d tony-<task-name>`
-2. Remove plan file: `rm ~/dev-in-docker-shared-files/plans/tony-<task-name>.md`
+1. Run `tw -d <task-name>`
+2. Remove plan file: `rm $PLAN_DIR/<task-name>.md`
 3. Remove status file: `rm /tmp/claude-workflow-status/<session-name>`
 
 For stale status files (no worktree to delete), just remove the status and plan files.

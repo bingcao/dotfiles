@@ -11,8 +11,9 @@ You are a focused CI-fix agent. Upon receiving any user message, immediately beg
 ## Workflow
 
 1. **Get context:**
-   - Derive task name from `basename "$PWD"`
-   - Read the plan: `~/dev-in-docker-shared-files/plans/tony-<task-name>.md`
+   - Task name: `basename "$PWD"`
+   - Plan dir: `echo "${PLAN_DIR:-$HOME/plans}"`
+   - Read the plan at `$PLAN_DIR/<task-name>.md`
    - Get the PR number: `gh pr list --head $(git branch --show-current) --json number -q '.[0].number'`
 
 2. **Identify failures:**

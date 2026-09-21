@@ -8,20 +8,19 @@ An automated development workflow built on Claude Code agents, tmux sessions, an
 ┌─────────────────────────────────────────────────────────────────┐
 │  Conversation (interactive Claude session)                       │
 │                                                                 │
-│  /planner ──→ formal plan ──→ tw tony-<task> -a implementor     │
-│  /spike   ──→ brief       ──→ tw tony-<task> -a spike           │
+│  /planner ──→ formal plan ──→ tw <task> -a implementor          │
+│  /spike   ──→ brief       ──→ tw <task> -a spike                │
 └─────────────────────────────────────────────────────────────────┘
         │                                │
         ▼                                ▼
 ┌───────────────────┐     ┌───────────────────────────────────────┐
 │  Plan/Brief file  │     │  New worktree + tmux session          │
-│  ~/dev-in-docker- │     │  /workspaces/tony-<task>              │
-│  shared-files/    │     │                                       │
-│  plans/tony-*.md  │     │  Agent reads plan → implements →      │
-│                   │     │  pushes draft PR → polls CI →         │
-│  (each plan can   │     │  (implementor only: watches for       │
-│   depend on any   │     │   author comments on draft PRs)       │
-│   other plan)     │     │                                       │
+│  $PLAN_DIR/       │     │  $WORKTREE_ROOT/<task>                │
+│  <task>.md        │     │                                       │
+│                   │     │  Agent reads plan → implements →      │
+│  (each plan can   │     │  pushes draft PR → polls CI →         │
+│   depend on any   │     │  (implementor only: watches for       │
+│   other plan)     │     │   author comments on draft PRs)       │
 └───────────────────┘     └───────────────────────────────────────┘
                                          │
                                          ▼
@@ -52,9 +51,9 @@ Synthesizes the current conversation into a formal implementation plan. Supports
 2. For multi-task: discusses decomposition and dependency graph before writing plans
 3. Asks for task name, JIRA ticket preference
 4. Enters plan mode for review
-5. On approval: saves plan, spawns implementor agent via `tw tony-<task> -a implementor`
+5. On approval: saves plan, spawns implementor agent via `tw <task> -a implementor`
 
-**Produces:** `~/dev-in-docker-shared-files/plans/tony-<task>.md` (detailed step-by-step plan)
+**Produces:** `$PLAN_DIR/<task>.md` (detailed step-by-step plan)
 
 ### `/spike`
 
@@ -64,9 +63,9 @@ Like `/planner` but lighter. Writes a medium-detail brief and spawns a fast spik
 1. Summarizes conversation into a brief (key files + approach)
 2. Asks for task name, JIRA ticket preference
 3. Shows brief inline for quick confirmation
-4. On confirmation: saves brief, spawns spike agent via `tw tony-<task> -a spike`
+4. On confirmation: saves brief, spawns spike agent via `tw <task> -a spike`
 
-**Produces:** `~/dev-in-docker-shared-files/plans/tony-<task>.md` (brief with key decisions)
+**Produces:** `$PLAN_DIR/<task>.md` (brief with key decisions)
 
 ### `/spawn-ready`
 
@@ -118,7 +117,7 @@ Autonomous implementation agent. Implements the plan, pushes a draft PR, then ha
 1. **Initialization** — reads plan, verifies branch
 2. **Implementation** — follows plan step-by-step, runs linter and tests
 3. **Commit & Push** — creates draft PR, requests copilot review
-4. **Start Watcher & Exit** — launches `pr-watcher.sh` in the `cmd` pane, then stops
+4. **Start Watcher & Exit** — launches `pr-watcher` in the `cmd` pane, then stops
 
 The implementor does NOT poll CI or watch for comments — that's the watcher's job.
 
@@ -143,20 +142,20 @@ Lightweight agent for quick implementations. Phases:
 
 ### `tw` command
 
-Git worktree + tmux session manager (`~/.config/zsh/worktree.zsh`).
+Git worktree + tmux session manager (installed to `~/.local/bin/tw`).
 
 ```bash
-tw tony-<task>                  # Create worktree + session, switch to it
-tw tony-<task> -a implementor   # Create + launch agent (stays in current session)
-tw tony-<task> -b tony-<base>   # Stack: branch from base (for dependent tasks)
-tw -d tony-<task>               # Delete worktree + session + branch
+tw <task>                  # Create worktree + session, switch to it
+tw <task> -a implementor   # Create + launch agent (stays in current session)
+tw <task> -b <base>        # Stack: branch from base (for dependent tasks)
+tw -d <task>               # Delete worktree + session + branch
 ```
 
 Each session gets 4 tmux windows: `claude`, `git` (lazygit), `nvim`, `cmd`.
 
 ### PR watcher
 
-`~/.config/scripts/pr-watcher.sh` is a bash script that runs in the `cmd` tmux pane after the implementor finishes. It:
+`pr-watcher` is a bash script (installed to `~/.local/bin/`) that runs in the `cmd` tmux pane after the implementor finishes. It:
 - Polls CI status every 60s (after initial 5min wait)
 - On CI failure: launches `ci-fixer` agent in the `claude` pane (up to 3 attempts)
 - On CI pass: switches to watching for author comments
@@ -168,7 +167,7 @@ Zero token cost while polling — Claude is only invoked when there's actual wor
 
 ### Workflow status
 
-`~/.config/scripts/workflow-status.sh` writes status to `/tmp/claude-workflow-status/<session>`.
+`workflow-status` (installed to `~/.local/bin/`) writes status to `/tmp/claude-workflow-status/<session>`.
 
 Format:
 ```
@@ -180,7 +179,7 @@ updated: <timestamp>
 
 ### Session picker
 
-`~/.config/tmux/session-switcher.sh` (bound to Prefix+f) shows all sessions with:
+`tmux-session-switcher` (bound to Prefix+f, installed to `~/.local/bin/`) shows all sessions with:
 - Current branch and HEAD commit
 - Claude tool status (working/permission/responded)
 - Webpack status
@@ -201,13 +200,13 @@ Status indicators:
 
 ## Multi-Task Dependencies
 
-For complex work, `/planner` creates multiple plan files in `~/dev-in-docker-shared-files/plans/`, each with a Dependencies section referencing sibling tasks by name. There is no separate project file — the dependency graph is implicit in the plans themselves.
+For complex work, `/planner` creates multiple plan files in `$PLAN_DIR/`, each with a Dependencies section referencing sibling tasks by name. There is no separate project file — the dependency graph is implicit in the plans themselves.
 
 Tasks are spawned in dependency order. `/spawn-ready` scans all plans, checks which tasks have their dependencies' PRs merged, and spawns them. Stacked PRs use the `-b` flag to branch from the parent task's branch. New dependent tasks can be added at any time by creating a plan that references an existing task.
 
 ## Persistence
 
-All plans live in `~/dev-in-docker-shared-files/` which survives container restarts. Status files in `/tmp/` are ephemeral but can be reconstructed via `/sync-status`.
+All plans live in `$PLAN_DIR` (default: `~/plans/`). Status files in `/tmp/` are ephemeral but can be reconstructed via `/sync-status`.
 
 ## Typical Workflows
 
