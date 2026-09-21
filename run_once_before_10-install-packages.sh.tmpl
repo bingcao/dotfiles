@@ -39,6 +39,12 @@ $SUDO apt-get install -y \
     nodejs \
     npm
 
+# Debian/Ubuntu installs bat as batcat
+if command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi
+
 if ! command -v eza &>/dev/null; then
     echo "Installing eza..."
     $SUDO mkdir -p /etc/apt/keyrings
