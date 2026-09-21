@@ -1,0 +1,71 @@
+#!/bin/bash
+set -euo pipefail
+
+{{ if eq .chezmoi.os "darwin" -}}
+if ! command -v brew &>/dev/null; then
+    echo "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+echo "Installing packages from Brewfile..."
+brew bundle --file="{{ .chezmoi.sourceDir }}/Brewfile"
+{{ else -}}
+echo "Installing base packages via apt..."
+sudo apt-get update
+sudo apt-get install -y \
+    git \
+    curl \
+    unzip \
+    neovim \
+    tmux \
+    fzf \
+    bat \
+    jq \
+    nodejs \
+    npm
+
+if ! command -v eza &>/dev/null; then
+    echo "Installing eza..."
+    sudo mkdir -p /etc/apt/keyrings
+    wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+    sudo apt-get update
+    sudo apt-get install -y eza
+fi
+
+if ! command -v zoxide &>/dev/null; then
+    echo "Installing zoxide..."
+    curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+fi
+
+if ! command -v yazi &>/dev/null; then
+    echo "Installing yazi..."
+    curl -sSfL https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-gnu.zip -o /tmp/yazi.zip
+    unzip -o /tmp/yazi.zip -d /tmp/yazi
+    sudo mv /tmp/yazi/yazi-x86_64-unknown-linux-gnu/yazi /usr/local/bin/
+    rm -rf /tmp/yazi /tmp/yazi.zip
+fi
+
+if ! command -v lazygit &>/dev/null; then
+    echo "Installing lazygit..."
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    curl -sSfLo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+    sudo install /tmp/lazygit /usr/local/bin
+    rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+fi
+
+if ! command -v delta &>/dev/null; then
+    echo "Installing delta..."
+    DELTA_VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
+    curl -sSfLo /tmp/delta.deb "https://github.com/dandavison/delta/releases/latest/download/git-delta_${DELTA_VERSION}_amd64.deb"
+    sudo dpkg -i /tmp/delta.deb
+    rm -f /tmp/delta.deb
+fi
+
+if ! command -v oh-my-posh &>/dev/null; then
+    echo "Installing oh-my-posh..."
+    curl -s https://ohmyposh.dev/install.sh | bash -s
+fi
+{{ end -}}

@@ -1,0 +1,10 @@
+{{- $name := promptStringOnce . "name" "Your full name" -}}
+{{- $email := promptStringOnce . "email" "Your git email" -}}
+{{- $isWork := promptBoolOnce . "is_work" "Is this a work machine (y/n)" -}}
+{{- $branchPrefix := promptStringOnce . "branch_prefix" "Git branch prefix (leave empty for none)" -}}
+
+[data]
+    name = {{ $name | quote }}
+    email = {{ $email | quote }}
+    is_work = {{ $isWork }}
+    branch_prefix = {{ $branchPrefix | quote }}

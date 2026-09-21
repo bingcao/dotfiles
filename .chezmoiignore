@@ -1,0 +1,10 @@
+README.md
+Brewfile
+LICENSE*
+.claude/README.md
+
+{{ if ne .chezmoi.os "darwin" }}
+.config/aerospace
+.config/ghostty
+.config/sketchybar
+{{ end }}

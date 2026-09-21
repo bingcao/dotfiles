@@ -99,5 +99,10 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+{{ if .is_work -}}
+# Source work-specific shell configuration if it exists
+[ -f "$HOME/.config/zsh/work.zsh" ] && source "$HOME/.config/zsh/work.zsh"
+{{ end -}}
+
 # Setup and use oh-my-posh
 eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/config.toml)"

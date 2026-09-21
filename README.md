@@ -1,23 +1,17 @@
 ## Installation
 
-### One-command setup (macOS)
+### One-command setup (new machine)
 
 ```
-git clone git@github.com:bingcao/dotfiles.git ~/dotfiles
-cd ~/dotfiles
-./install.sh
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply bingcao/dotfiles
 ```
 
-This will:
-1. Install all packages via Homebrew (Brewfile)
-2. Symlink configs to `$HOME` via GNU Stow
-3. Install zinit and tmux plugin manager
+chezmoi will prompt for your name, email, whether this is a work machine, and git branch prefix on first run.
 
-### Link-only (skip package installation)
+### From a local clone
 
 ```
-cd ~/dotfiles
-./install.sh --link
+chezmoi init --apply --source ~/dotfiles
 ```
 
 ### What gets installed
@@ -55,3 +49,12 @@ Set these in your `.zshrc` or container setup script to override defaults.
 ### Post-create hook
 
 After `tw` creates a worktree, it runs `~/.config/tw/post-create <worktree-path>` if that file exists and is executable. Use this for environment-specific setup (copying `.env` files, running dependency install, etc.).
+
+### Platform support
+
+- **macOS**: Full install via Homebrew (Brewfile). Includes desktop apps (Ghostty, AeroSpace, SketchyBar).
+- **Linux**: Core CLI tools installed via apt + direct downloads. Desktop apps are skipped automatically.
+
+### Work vs personal
+
+On `chezmoi init`, you're prompted whether this is a work machine. When `is_work = true`, zsh sources `~/.config/zsh/work.zsh` if it exists — put work-specific aliases, env vars, and tool setup there.
