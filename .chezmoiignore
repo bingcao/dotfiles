@@ -3,6 +3,10 @@ Brewfile
 LICENSE*
 .claude/README.md
 
+{{ if .is_work }}
+.zshrc
+{{ end }}
+
 {{ if ne .chezmoi.os "darwin" }}
 .config/aerospace
 .config/ghostty
