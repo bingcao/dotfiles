@@ -1,13 +1,16 @@
 ## Installation
 
-### First time setup (new machine or container)
+### First time setup
 
-**Prerequisites:** `git` and `curl` must be available. On a minimal Docker container, run `apt-get update && apt-get install -y git curl` first.
+**Prerequisites:** `git` and `curl` must be available:
+```
+apt-get update && apt-get install -y git curl
+```
 
 **1. Install chezmoi and apply dotfiles:**
 
 ```
-mkdir -p ~/.config && sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply bingcao/dotfiles
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply bingcao/dotfiles
 ```
 
 You'll be prompted for:
