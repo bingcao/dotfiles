@@ -15,6 +15,7 @@ set -euo pipefail
 
 WORKTREE_ROOT="${WORKTREE_ROOT:-$HOME/worktrees}"
 PLAN_DIR="${PLAN_DIR:-$HOME/plans}"
+BRANCH_PREFIX="${BRANCH_PREFIX:-}"
 
 resolve_main_tree() {
   if [[ -n "${MAIN_TREE_ROOT:-}" ]]; then
@@ -103,6 +104,7 @@ Environment:
   WORKTREE_ROOT       Where worktrees are created (default: ~/worktrees)
   MAIN_TREE_ROOT      Main git repo root (default: auto-detect)
   PLAN_DIR            Where plan files live (default: ~/plans)
+  BRANCH_PREFIX       Prefix for auto-created branch names (default: none)
 
 When creating a new session, tw sets up four tmux windows:
   claude  - Opens claude (or claude --agent <agent> if -a specified)
@@ -178,7 +180,7 @@ fi
 if [[ ! -d "$WORKTREE_ROOT/$name" ]]; then
   wt_require_main_tree || exit 1
   main_tree="$(resolve_main_tree)"
-  branch="${branch:-$name}"
+  branch="${branch:-${BRANCH_PREFIX}${name}}"
 
   local_start_point=""
   if [[ -n "$base" ]]; then

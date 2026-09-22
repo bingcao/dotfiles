@@ -13,6 +13,9 @@ export PLAN_DIR="{{ .plan_dir }}"
 {{ if ne .worktree_root "" -}}
 export WORKTREE_ROOT="{{ .worktree_root }}"
 {{ end -}}
+{{ if ne .branch_prefix "" -}}
+export BRANCH_PREFIX="{{ .branch_prefix }}"
+{{ end -}}
 
 # Set where to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
