@@ -214,7 +214,7 @@ tmux new-session -d -s "$session_name" -c "$wt_path" -n "claude"
 if [[ -n "$agent" ]]; then
   tmux rename-window -t "${session_name}" "auto"
   if [[ "$agent" == "implementor" ]]; then
-    tmux send-keys -t "${session_name}:auto" "pr-watcher --implement ${session_name} ${name} ${name}" Enter
+    tmux send-keys -t "${session_name}:auto" "pr-watcher --implement" Enter
   else
     tmux send-keys -t "${session_name}:auto" "claude --agent $agent --allowedTools 'Bash Read Write Edit Grep Glob Skill'" Enter
     for i in $(seq 1 30); do

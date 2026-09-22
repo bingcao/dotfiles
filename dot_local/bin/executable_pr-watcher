@@ -2,33 +2,20 @@
 # Watches a PR for CI results and author comments.
 # Runs Claude agents interactively when action is needed.
 #
-# Usage: pr-watcher <session-name> <pr-number> <branch>
-#   Or to also run the implementor first:
-#        pr-watcher --implement <session-name> <task-name> <branch>
-#   Or to resume watching (auto-detects PR from branch):
-#        pr-watcher --resume
+# Usage: pr-watcher                Run watcher (auto-detects session/branch from cwd)
+#        pr-watcher --implement    Run implementor first, then watch
+#        pr-watcher --resume       Alias for default mode
 
 set -u
 
 # Parse mode
 IMPLEMENT=false
-RESUME=false
 if [ "${1:-}" = "--implement" ]; then
   IMPLEMENT=true
-  shift
-elif [ "${1:-}" = "--resume" ]; then
-  RESUME=true
 fi
 
-if [ "$RESUME" = true ]; then
-  BRANCH=$(git branch --show-current 2>/dev/null || echo "")
-  SESSION=$(basename "$PWD" | tr './:' '-')
-  TASK_OR_PR=""
-else
-  SESSION="$1"
-  TASK_OR_PR="$2"
-  BRANCH="${3:-}"
-fi
+BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+SESSION=$(basename "$PWD" | tr './:' '-')
 
 CI_FIX_ATTEMPTS=0
 MAX_CI_FIXES=3
@@ -150,31 +137,20 @@ check_merged() {
 
 log "PR watcher started for session=$SESSION branch=$BRANCH"
 
-# Phase 0: Run implementor or detect existing PR
+# Phase 0: Run implementor if requested, then detect PR
 if [ "$IMPLEMENT" = true ]; then
   log "Starting implementor..."
   update_status "implementing"
   run_agent "implementor"
-
-  detect_pr
-  if [ -z "$PR_NUMBER" ]; then
-    log "No PR found after implementor. Watcher exiting."
-    update_status "error"
-    exit 1
-  fi
-  log "PR #$PR_NUMBER detected."
-elif [ "$RESUME" = true ]; then
-  log "Resuming — detecting PR from branch $BRANCH..."
-  detect_pr
-  if [ -z "$PR_NUMBER" ]; then
-    log "No PR found for branch $BRANCH. Watcher exiting."
-    exit 1
-  fi
-  log "Resumed watching PR #$PR_NUMBER."
-else
-  PR_NUMBER="$TASK_OR_PR"
-  detect_pr
 fi
+
+detect_pr
+if [ -z "$PR_NUMBER" ]; then
+  log "No PR found for branch $BRANCH. Watcher exiting."
+  update_status "error"
+  exit 1
+fi
+log "PR #$PR_NUMBER detected."
 
 AUTHOR="$(gh api user -q '.login' 2>/dev/null || echo "")"
 REPO="$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null || echo "")"
