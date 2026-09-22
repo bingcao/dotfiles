@@ -2,5 +2,6 @@ tags
 .luarc.json
 spell/
 lazy-lock.json
-.config/tmux/plugins
+dot_config/tmux/plugins
 *.env*
+dot_claude/settings.local.json

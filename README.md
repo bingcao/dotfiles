@@ -1,28 +1,54 @@
 ## Installation
 
-### One-command setup (macOS)
+### First time setup (new machine or container)
+
+**Prerequisites:** `git` and `curl` must be available. On a minimal Docker container, run `apt-get update && apt-get install -y git curl` first.
+
+**1. Install chezmoi and apply dotfiles:**
 
 ```
-git clone git@github.com:bingcao/dotfiles.git ~/dotfiles
-cd ~/dotfiles
-./install.sh
+mkdir -p ~/.config && sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply bingcao/dotfiles
 ```
 
-This will:
-1. Install all packages via Homebrew (Brewfile)
-2. Symlink configs to `$HOME` via GNU Stow
-3. Install zinit and tmux plugin manager
+You'll be prompted for:
+- **Your full name** — used in git config
+- **Your git email** — used in git config
+- **Is this a work machine** — enables work-specific shell config
+- **Git branch prefix** — prepended to branches in lazygit (leave empty for none)
 
-### Link-only (skip package installation)
+**2. Start zsh:**
 
 ```
-cd ~/dotfiles
-./install.sh --link
+zsh
+```
+
+To make zsh your default shell:
+
+```
+chsh -s $(which zsh)
+```
+
+**3. Install tmux plugins** (first time opening tmux):
+
+Press `prefix + I` (Ctrl-b then Shift-i) to install tmux plugins via tpm.
+
+### From a local clone
+
+```
+chezmoi init --apply --source ~/dotfiles
+```
+
+### Updating
+
+After pulling changes to the dotfiles repo:
+
+```
+chezmoi apply
 ```
 
 ### What gets installed
 
-**CLI tools:** neovim, tmux, fzf, eza, bat, zoxide, yazi, lazygit, delta, oh-my-posh, jq
+**CLI tools:** zsh, neovim, tmux, fzf, eza, bat, zoxide, yazi, lazygit, delta, oh-my-posh, jq, Claude Code
 
 **macOS desktop:** Ghostty, AeroSpace, SketchyBar, borders
 
@@ -55,3 +81,12 @@ Set these in your `.zshrc` or container setup script to override defaults.
 ### Post-create hook
 
 After `tw` creates a worktree, it runs `~/.config/tw/post-create <worktree-path>` if that file exists and is executable. Use this for environment-specific setup (copying `.env` files, running dependency install, etc.).
+
+### Platform support
+
+- **macOS**: Full install via Homebrew (Brewfile). Includes desktop apps (Ghostty, AeroSpace, SketchyBar).
+- **Linux**: Core CLI tools installed via apt + direct downloads. Desktop apps are skipped automatically.
+
+### Work vs personal
+
+On `chezmoi init`, you're prompted whether this is a work machine. When `is_work = true`, zsh sources `~/.config/zsh/work.zsh` if it exists — put work-specific aliases, env vars, and tool setup there.

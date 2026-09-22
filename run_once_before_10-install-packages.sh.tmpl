@@ -1,0 +1,96 @@
+#!/bin/bash
+set -euo pipefail
+
+{{ if eq .chezmoi.os "darwin" -}}
+if ! command -v brew &>/dev/null; then
+    echo "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+echo "Installing packages from Brewfile..."
+brew bundle --file="{{ .chezmoi.sourceDir }}/Brewfile"
+{{ else -}}
+SUDO=""
+if [ "$(id -u)" -ne 0 ] && command -v sudo &>/dev/null; then
+    SUDO="sudo"
+fi
+
+ARCH="$(uname -m)"
+case "$ARCH" in
+    x86_64)  ARCH_DEB="amd64"; ARCH_GO="x86_64"; ARCH_YAZI="x86_64-unknown-linux-gnu" ;;
+    aarch64) ARCH_DEB="arm64"; ARCH_GO="arm64";   ARCH_YAZI="aarch64-unknown-linux-gnu" ;;
+    arm64)   ARCH_DEB="arm64"; ARCH_GO="arm64";   ARCH_YAZI="aarch64-unknown-linux-gnu" ;;
+    *)       echo "Unsupported architecture: $ARCH"; exit 1 ;;
+esac
+
+echo "Installing base packages via apt..."
+$SUDO apt-get update
+$SUDO apt-get install -y \
+    git \
+    curl \
+    unzip \
+    zsh \
+    neovim \
+    tmux \
+    fzf \
+    bat \
+    jq \
+    nodejs \
+    npm
+
+# Debian/Ubuntu installs bat as batcat
+if command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi
+
+if ! command -v eza &>/dev/null; then
+    echo "Installing eza..."
+    $SUDO mkdir -p /etc/apt/keyrings
+    curl -fsSL https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | $SUDO gpg --batch --yes --dearmor -o /etc/apt/keyrings/gierens.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | $SUDO tee /etc/apt/sources.list.d/gierens.list
+    $SUDO apt-get update
+    $SUDO apt-get install -y eza
+fi
+
+if ! command -v zoxide &>/dev/null; then
+    echo "Installing zoxide..."
+    curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+fi
+
+if ! command -v yazi &>/dev/null; then
+    echo "Installing yazi..."
+    curl -sSfL "https://github.com/sxyazi/yazi/releases/latest/download/yazi-${ARCH_YAZI}.zip" -o /tmp/yazi.zip
+    unzip -o /tmp/yazi.zip -d /tmp/yazi
+    $SUDO mv "/tmp/yazi/yazi-${ARCH_YAZI}/yazi" /usr/local/bin/
+    rm -rf /tmp/yazi /tmp/yazi.zip
+fi
+
+if ! command -v lazygit &>/dev/null; then
+    echo "Installing lazygit..."
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    curl -sSfLo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_${ARCH_GO}.tar.gz"
+    tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+    $SUDO install /tmp/lazygit /usr/local/bin
+    rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+fi
+
+if ! command -v delta &>/dev/null; then
+    echo "Installing delta..."
+    DELTA_VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
+    curl -sSfLo /tmp/delta.deb "https://github.com/dandavison/delta/releases/latest/download/git-delta_${DELTA_VERSION}_${ARCH_DEB}.deb"
+    $SUDO dpkg -i /tmp/delta.deb
+    rm -f /tmp/delta.deb
+fi
+
+if ! command -v oh-my-posh &>/dev/null; then
+    echo "Installing oh-my-posh..."
+    curl -s https://ohmyposh.dev/install.sh | bash -s
+fi
+
+if ! command -v claude &>/dev/null; then
+    echo "Installing Claude Code..."
+    npm install -g @anthropic-ai/claude-code
+fi
+{{ end -}}

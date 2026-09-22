@@ -1,4 +1,6 @@
 # Core CLI tools
+brew "git"
+brew "gh"
 brew "neovim"
 brew "tmux"
 brew "fzf"
@@ -9,8 +11,18 @@ brew "yazi"
 brew "lazygit"
 brew "git-delta"
 brew "jq"
-brew "stow"
+
+brew "node"
+brew "coreutils"
 brew "jandedobbeleer/oh-my-posh/oh-my-posh"
+
+# Optional: yazi file preview/open
+brew "mpv"
+brew "exiftool"
+brew "mediainfo"
+
+# Fonts
+cask "font-meslo-lg-nerd-font"
 
 # macOS desktop apps
 cask "ghostty"

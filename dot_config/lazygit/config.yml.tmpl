@@ -1,6 +1,8 @@
 git:
   fetchAll: false
-  branchPrefix: "tony-"
+{{- if ne .branch_prefix "" }}
+  branchPrefix: "{{ .branch_prefix }}"
+{{- end }}
   paging:
     colorArg: always
     pager: delta --dark --paging=never
