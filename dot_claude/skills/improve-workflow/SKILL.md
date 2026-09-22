@@ -5,7 +5,12 @@ description: Review the current conversation for opportunities to improve existi
 
 # Improve Workflow
 
-Review the current conversation and extract opportunities to improve or extend the AI workflow configuration. All configuration lives in the chezmoi source at `~/dotfiles` — edit there, then deploy.
+Review the current conversation and extract opportunities to improve or extend the AI workflow configuration. All configuration lives in the chezmoi source directory — edit there, then deploy.
+
+Resolve the source directory once at the start:
+```
+DOTFILES="$(chezmoi source-path)"
+```
 
 ## What to look for
 
@@ -19,7 +24,7 @@ Review the current conversation and extract opportunities to improve or extend t
 ## Workflow
 
 1. **Analyze the conversation** for any of the patterns above
-2. **Read the relevant source files** in `~/dotfiles`:
+2. **Read the relevant source files** in `$DOTFILES`:
    - `dot_claude/settings.json` — permissions, hooks, model
    - `dot_claude/agents/*.md` — agent definitions
    - `dot_claude/skills/*/SKILL.md` — skill definitions
@@ -31,14 +36,14 @@ Review the current conversation and extract opportunities to improve or extend t
    - Category: new skill, new command, agent update, settings change, shell config, or permission addition
 4. **Ask for confirmation** before making any changes
 5. **Apply approved changes:**
-   - Edit files in `~/dotfiles`
-   - Commit: `git -C ~/dotfiles add -A && git -C ~/dotfiles commit -m "<description>"`
-   - Deploy: `chezmoi apply --source ~/dotfiles`
+   - Edit files in `$DOTFILES`
+   - Commit: `git -C $DOTFILES add -A && git -C $DOTFILES commit -m "<description>"`
+   - Deploy: `chezmoi apply --source $DOTFILES`
 6. **Verify** — spot-check that the deployed files match expectations (e.g. `cat ~/.claude/settings.json`)
 
 ## Chezmoi conventions
 
-| What | Where in `~/dotfiles` | Deploys to |
+| What | Where in `$DOTFILES` | Deploys to |
 |---|---|---|
 | Agent | `dot_claude/agents/<name>.md` | `~/.claude/agents/<name>.md` |
 | Skill | `dot_claude/skills/<name>/SKILL.md` | `~/.claude/skills/<name>/SKILL.md` |
@@ -57,7 +62,7 @@ Review the current conversation and extract opportunities to improve or extend t
 - Only propose changes that are generalizable — not one-off fixes
 - Prefer updating existing files over creating new ones
 - Keep instructions concise — scannable, not paragraphs
-- Always edit `~/dotfiles`, never the deployed paths directly
+- Always edit `$DOTFILES`, never the deployed paths directly
 - Always commit after changes so they aren't lost
 - Always run `chezmoi apply` so changes take effect in the current session
 - If nothing worth extracting exists in the conversation, say so — don't force changes
