@@ -2,9 +2,13 @@
 {{- $email := promptStringOnce . "email" "Your git email" -}}
 {{- $isWork := promptBoolOnce . "is_work" "Is this a work machine (y/n)" -}}
 {{- $branchPrefix := promptStringOnce . "branch_prefix" "Git branch prefix (leave empty for none)" -}}
+{{- $planDir := promptStringOnce . "plan_dir" "Plan directory (leave empty for ~/plans)" -}}
+{{- $worktreeRoot := promptStringOnce . "worktree_root" "Worktree root (leave empty for ~/worktrees)" -}}
 
 [data]
     name = {{ $name | quote }}
     email = {{ $email | quote }}
     is_work = {{ $isWork }}
     branch_prefix = {{ $branchPrefix | quote }}
+    plan_dir = {{ $planDir | quote }}
+    worktree_root = {{ $worktreeRoot | quote }}

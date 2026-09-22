@@ -7,6 +7,12 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 export XDG_CONFIG_HOME="$HOME/.config"
+{{ if ne .plan_dir "" -}}
+export PLAN_DIR="{{ .plan_dir }}"
+{{ end -}}
+{{ if ne .worktree_root "" -}}
+export WORKTREE_ROOT="{{ .worktree_root }}"
+{{ end -}}
 
 # Set where to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
