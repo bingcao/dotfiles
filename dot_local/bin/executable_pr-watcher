@@ -4,7 +4,6 @@
 #
 # Usage: pr-watcher                Run watcher (auto-detects session/branch from cwd)
 #        pr-watcher --implement    Run implementor first, then watch
-#        pr-watcher --resume       Alias for default mode
 
 set -u
 
