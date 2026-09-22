@@ -33,7 +33,6 @@ $SUDO apt-get install -y \
     zsh \
     neovim \
     tmux \
-    fzf \
     bat \
     jq \
     nodejs \
@@ -43,6 +42,15 @@ $SUDO apt-get install -y \
 if command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
     mkdir -p "$HOME/.local/bin"
     ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi
+
+if ! command -v fzf &>/dev/null || [[ "$(fzf --version 2>&1)" == *"debian"* ]]; then
+    echo "Installing fzf (latest)..."
+    FZF_VERSION=$(curl -s "https://api.github.com/repos/junegunn/fzf/releases/latest" | grep -Po '"tag_name": "v?\K[^"]*')
+    curl -sSfLo /tmp/fzf.tar.gz "https://github.com/junegunn/fzf/releases/latest/download/fzf-${FZF_VERSION}-linux_${ARCH_DEB}.tar.gz"
+    tar xf /tmp/fzf.tar.gz -C /tmp fzf
+    $SUDO install /tmp/fzf /usr/local/bin
+    rm -f /tmp/fzf /tmp/fzf.tar.gz
 fi
 
 if ! command -v eza &>/dev/null; then

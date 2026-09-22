@@ -143,7 +143,7 @@ generate_entries() {
 }
 
 while true; do
-  output=$(generate_entries | fzf --read0 --ansi --reverse \
+  output=$(generate_entries | fzf --read0 --ansi --reverse --multi-line \
     --header 'enter=switch / ctrl-r=rename / ctrl-a=new / ctrl-x=close' \
     --expect=ctrl-r,ctrl-a,ctrl-x)
 
