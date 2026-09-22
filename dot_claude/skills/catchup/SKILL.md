@@ -14,7 +14,11 @@ Quickly load all relevant context for the current worktree so you can start iter
 3. **Read the plan** — `$PLAN_DIR/<task-name>.md`
 4. **Show git state:**
    - Current branch: `git branch --show-current`
-   - Commits ahead of base: `git log --oneline origin/dev..HEAD` (or the plan's base branch)
+   - Resolve the base branch from the plan's `## Dependencies` section (default: `dev`), then use the merge base for accurate diffs:
+     ```
+     BASE=origin/<base-branch>
+     git log --oneline $(git merge-base HEAD $BASE)..HEAD
+     ```
    - Uncommitted changes: `git status --short`
 5. **Check for a PR:**
    - `gh pr list --head <branch> --json number,url,state,isDraft,title -q '.[0]'`

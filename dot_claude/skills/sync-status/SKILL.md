@@ -40,7 +40,8 @@ Resolve: `WORKTREE_ROOT="${WORKTREE_ROOT:-$HOME/worktrees}"`.
 git -C $WORKTREE_ROOT/<name> branch --show-current
 
 # Check commits ahead
-git -C $WORKTREE_ROOT/<name> log --oneline origin/dev..HEAD
+BASE=origin/dev  # or the plan's base branch
+git -C $WORKTREE_ROOT/<name> log --oneline $(git -C $WORKTREE_ROOT/<name> merge-base HEAD $BASE)..HEAD
 
 # Find PR for branch
 gh pr list --head <branch> --json number,state,url -q '.[0]'
