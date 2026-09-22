@@ -19,11 +19,14 @@ Review the current conversation and extract opportunities to improve or extend t
 ## Workflow
 
 1. **Analyze the conversation** for any of the patterns above
-2. **Read the current state** of the relevant files in the dotfiles repo (`~/.claude/` or the dotfiles source):
-   - `.claude/settings.json` — permissions and hooks
-   - `.claude/agents/` — agent definitions
-   - `.claude/skills/` — skill definitions
-   - `.local/bin/` — helper scripts
+2. **Read the current state** of the relevant files in the chezmoi source directory (`~/dotfiles`):
+   - `dot_claude/settings.json` — permissions and hooks
+   - `dot_claude/agents/` — agent definitions
+   - `dot_claude/skills/` — skill definitions
+   - `dot_local/bin/` — helper scripts (prefixed with `executable_`)
+   - `dot_config/zsh/custom.zsh.tmpl` — shell config (chezmoi template)
+   - `.chezmoi.toml.tmpl` — chezmoi data prompts
+   - `.chezmoiignore` — platform/environment conditional file skipping
 3. **Propose changes** — present a summary of what you'd add, modify, or create:
    - For each change, explain what triggered it (quote the relevant moment from the conversation)
    - Categorize as: new skill, new command, instruction update, agent update, new script, or permission addition
@@ -35,6 +38,9 @@ Review the current conversation and extract opportunities to improve or extend t
 - Only propose changes that are generalizable to future conversations — not one-off fixes
 - Prefer updating existing files over creating new ones
 - Keep instructions concise — rules should be scannable, not paragraphs
-- New skills need a directory with `SKILL.md` inside it
-- New agents are single `.md` files in `.claude/agents/`
+- New skills need a directory with `SKILL.md` inside it under `dot_claude/skills/`
+- New agents are single `.md` files in `dot_claude/agents/`
+- New bin scripts go in `dot_local/bin/` with the `executable_` prefix (chezmoi convention)
+- Files needing chezmoi template variables use `.tmpl` suffix
+- All changes go in the chezmoi source (`~/dotfiles`), not the deployed paths — run `chezmoi apply` to deploy
 - If nothing worth extracting exists in the conversation, say so — don't force changes
