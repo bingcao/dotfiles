@@ -39,13 +39,18 @@ wt_require_main_tree() {
 
 wt_add() {
   local name="$1" branch="${2:-$1}" start="${3:-HEAD}"
-  local main_tree
-  main_tree="$(resolve_main_tree)" || return 1
 
-  if git -C "$main_tree" rev-parse --verify "$branch" &>/dev/null; then
-    git -C "$main_tree" worktree add "$WORKTREE_ROOT/$name" "$branch"
+  if [[ -x "$HOME/.config/tw/worktree-add" ]]; then
+    "$HOME/.config/tw/worktree-add" "$name" "$branch" "$start"
   else
-    git -C "$main_tree" worktree add "$WORKTREE_ROOT/$name" -b "$branch" "$start"
+    local main_tree
+    main_tree="$(resolve_main_tree)" || return 1
+
+    if git -C "$main_tree" rev-parse --verify "$branch" &>/dev/null; then
+      git -C "$main_tree" worktree add "$WORKTREE_ROOT/$name" "$branch"
+    else
+      git -C "$main_tree" worktree add "$WORKTREE_ROOT/$name" -b "$branch" "$start"
+    fi
   fi
 
   # Run post-create hook if it exists
@@ -105,6 +110,11 @@ Environment:
   MAIN_TREE_ROOT      Main git repo root (default: auto-detect)
   PLAN_DIR            Where plan files live (default: ~/plans)
   BRANCH_PREFIX       Prefix for auto-created branch names (default: none)
+
+Hooks (~/.config/tw/):
+  worktree-add        Called instead of git worktree add if executable.
+                      Args: <name> <branch> <start-point>
+  post-create         Called after worktree creation. Args: <worktree-path>
 
 When creating a new session, tw sets up four tmux windows:
   claude  - Opens claude (or claude --agent <agent> if -a specified)
