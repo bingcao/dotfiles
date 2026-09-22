@@ -47,7 +47,7 @@ What we're building and why, in 2-3 sentences.
 - Any constraints or gotchas worth noting
 
 ## PR Details
-- **Branch:** `<task-name>`
+- **Branch:** (auto-created by `tw` — may include a prefix from `$BRANCH_PREFIX`)
 - **Title:** `<short PR title> BNCH-XXXXX`
 - **Body:** `<one-line description>`
 ```

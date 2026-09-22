@@ -102,7 +102,7 @@ One paragraph: what we're doing and why.
 - Commands: `dev test pyunit run <file>` or `dev test jsunit run <file>`
 
 ## PR Details
-- **Branch:** `<task-name>`
+- **Branch:** (auto-created by `tw` — may include a prefix from `$BRANCH_PREFIX`)
 - **Title:** `<short PR title> BNCH-XXXXX`
 - **Body:** `<description for the PR body>`
 ```
@@ -125,4 +125,4 @@ Always include the Dependencies section. For tasks with no dependencies, use "no
 - The plan must be detailed enough for an autonomous agent to execute without asking questions
 - Every step must specify the exact file, location, and change — never say "update X" without saying how
 - Include specific test files and commands in the Testing Strategy
-- The task name becomes the branch name and the worktree directory name
+- The task name becomes the worktree directory name; the branch name may include `$BRANCH_PREFIX`
