@@ -164,8 +164,7 @@ AUTHOR="$(gh api user -q '.login' 2>/dev/null || echo "")"
 REPO="$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null || echo "")"
 
 update_status "waiting-ci"
-log "Polling every 60s (pr=#$PR_NUMBER)..."
-wait_or_trigger 60
+log "Watching PR #$PR_NUMBER..."
 
 CI_PASSED=false
 
