@@ -143,9 +143,18 @@ if [ "$IMPLEMENT" = true ]; then
   run_agent "implementor"
 fi
 
-detect_pr
+# Re-read branch in case the implementor created/changed it
+BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+
+for i in 1 2 3 4 5; do
+  detect_pr
+  [ -n "$PR_NUMBER" ] && break
+  log "No PR found for branch $BRANCH, retrying in 10s... ($i/5)"
+  sleep 10
+done
+
 if [ -z "$PR_NUMBER" ]; then
-  log "No PR found for branch $BRANCH. Watcher exiting."
+  log "No PR found for branch $BRANCH after retries. Watcher exiting."
   update_status "error"
   exit 1
 fi
