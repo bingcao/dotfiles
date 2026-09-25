@@ -165,6 +165,11 @@ HELP
   esac
 done
 
+# Apply branch prefix to name when auto-creating (no explicit branch given)
+if [[ -n "$name" && -z "$branch" && -n "$BRANCH_PREFIX" && "$name" != "${BRANCH_PREFIX}"* ]]; then
+  name="${BRANCH_PREFIX}${name}"
+fi
+
 session_name="$(session_name_from "${name:-}")"
 
 # No args: list worktrees and sessions
@@ -190,7 +195,7 @@ fi
 if [[ ! -d "$WORKTREE_ROOT/$name" ]]; then
   wt_require_main_tree || exit 1
   main_tree="$(resolve_main_tree)"
-  branch="${branch:-${BRANCH_PREFIX}${name}}"
+  branch="${branch:-${name}}"
 
   local_start_point=""
   if [[ -n "$base" ]]; then
