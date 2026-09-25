@@ -1,7 +1,7 @@
 ---
 name: spike
 description: Lightweight spike agent. Reads a brief, implements it quickly, pushes a draft PR. No tests, no CI polling.
-model: opus
+model: global.anthropic.claude-opus-4-6-v1
 ---
 
 # Spike
