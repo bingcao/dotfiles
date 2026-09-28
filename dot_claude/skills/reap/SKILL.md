@@ -1,6 +1,6 @@
 ---
 name: reap
-description: Check for merged/closed PRs across worktree sessions and clean up (delete worktrees, sessions, plans, status files) with confirmation.
+description: Check for merged/closed PRs across worktree sessions, optionally update Jira tickets (story points + done), and clean up (delete worktrees, sessions, plans, status files) with confirmation.
 ---
 
 # Reap
@@ -48,7 +48,25 @@ Still active:
 
 Ask which to clean up (default: all merged/closed + all stale; spikes are listed but NOT auto-selected).
 
-### 4. Clean up confirmed tasks
+### 4. Check Jira tickets (requires Jira MCP)
+
+For each task confirmed for cleanup, check if it has a corresponding Jira ticket:
+
+1. **Find the ticket key** — look at the PR title/body or plan file for a Jira key (e.g., `BENCH-1234`)
+2. **Get the cloudId** if not already known:
+   - Call `getAccessibleAtlassianResources` and use the first cloud site's `id`
+3. **Check ticket status and story points** — call `getJiraIssue` with the ticket key:
+   - Look at the `status` field for current state
+   - Look at `customfield_10016` for story points (or discover the field via `getJiraIssueTypeMetaWithFields` if needed)
+4. **If story points are not set**, ask the user what to set them to, then call `editJiraIssue` to update the field
+5. **Ask the user** whether to mark the ticket as done (do NOT auto-mark — always prompt per ticket)
+6. If confirmed, transition the ticket:
+   - Call `listJiraIssueTransitions` to find the transition ID for "Done"
+   - Call `transitionJiraIssue` with that transition ID
+
+If the Jira MCP is not connected, skip this step and note it in the report.
+
+### 5. Clean up confirmed tasks
 
 For each confirmed task:
 1. Run `tw -d <task-name>`
@@ -57,9 +75,9 @@ For each confirmed task:
 
 For stale status files (no worktree to delete), just remove the status and plan files.
 
-### 5. Report
+### 6. Report
 
-Summarize what was cleaned up and what's still active.
+Summarize what was cleaned up, any Jira tickets updated, and what's still active.
 
 ## Rules
 
