@@ -1,74 +1,109 @@
 ---
 name: planner
-description: Synthesize the current conversation into one or more implementation plans. Supports single tasks and multi-task decompositions with inter-plan dependencies.
+description: Research a task, confirm the approach with the user, then produce implementation plan(s) and spawn implementors. Supports skipping research if context already exists.
 ---
 
 # Planner
 
-This skill is invoked mid-conversation, after you have already explored and discussed the work with the user. Your job is to synthesize what has been discussed into formal implementation plan(s) — not to start research from scratch.
+Turn a task description into one or more implementation plans, doing whatever research is needed first.
 
-## Determining Scope
+---
 
-**Always ask the user first:** Is this a single task or a multi-task project?
+## Phase 1 — Research
+
+### 1.1 Assess existing context
+
+Look at the current conversation. Ask the user one question:
+
+> I can research the codebase first, or plan directly from what we've discussed. Which do you prefer?
+
+If the user says to skip research (or conversation already contains detailed exploration), jump to Phase 2.
+
+### 1.2 Investigate
+
+Based on the task description:
+1. **Search the codebase** — find relevant files, functions, types, tests, and patterns
+2. **Read key files** — understand the current implementation, data flow, and conventions
+3. **Identify constraints** — existing tests, related code, API contracts, migration concerns
+4. **Note open questions** — anything ambiguous or where multiple approaches exist
+
+Use Explore agents for broad searches. Read files directly for targeted investigation.
+
+### 1.3 Present findings
+
+Present a concise research summary to the user:
+
+```
+## Research Summary
+
+**Relevant files:**
+- `path/to/file.ext` — what it does and why it matters
+- ...
+
+**Current behavior:** How it works today (1-2 sentences)
+
+**Proposed approach:** How to change it (1-2 sentences)
+
+**Key decisions:**
+- Decision A: option 1 vs option 2 (recommend X because Y)
+- Decision B: ...
+
+**Risks/concerns:** Anything to watch out for
+```
+
+**Wait for the user to confirm or redirect.** Do not proceed to planning until the user agrees with the approach. If they redirect, investigate further and present again.
+
+---
+
+## Phase 2 — Plan
+
+### 2.1 Determine scope
+
+**Ask the user:** Is this a single task or a multi-task project?
 - **Single task** — one plan, one implementor, one PR
 - **Multi-task project** — multiple plans with a dependency graph, multiple implementors
 
-Do not decide this on your own. Wait for the user's answer before proceeding.
+Do not decide this on your own. Wait for the user's answer.
 
-**If multi-task:** Before writing any plans, discuss the decomposition with the user:
-- Propose how to split the work into sub-tasks
-- Identify which tasks can run in parallel vs. which have dependencies
-- Discuss the dependency graph and get agreement on the ordering
-- Only proceed to writing plans once the user confirms the breakdown
+**If multi-task:** Propose the decomposition before writing any plans:
+- How to split the work into sub-tasks
+- Which tasks can run in parallel vs. which have dependencies
+- The dependency graph and ordering
 
----
+Only proceed once the user confirms the breakdown.
 
-## Single Task Workflow
+### 2.2 Gather metadata
 
-1. **Summarize** the current conversation's decisions, files discussed, and agreed approach into a structured plan
-2. **Ask the user** for a task name (short kebab-case slug, e.g. `add-widget-counts`)
-3. **Ask about JIRA** — three options:
+1. **Ask for a task name** (short kebab-case slug, e.g. `add-widget-counts`)
+2. **Ask about JIRA** — three options:
    - User provides an existing ticket ID → include it in the plan
-   - User wants to create a new ticket → create one using the task summary as the title, then include the new ticket ID in the plan
+   - User wants to create a new ticket → create one using the task summary as the title, then include the new ticket ID
    - No ticket needed → omit the JIRA section
-4. **Clarify** anything ambiguous or missing from the discussion before writing the plan
-5. **Enter plan mode** — use the EnterPlanMode tool. Write the plan to the plan mode file using the format below. This lets the user review, suggest edits, and approve the plan through the plan mode UI.
-6. **Once the user approves the plan**, resolve the plan dir (`PLAN_DIR="${PLAN_DIR:-$HOME/plans}"`) and save the plan to `$PLAN_DIR/<task-name>.md`
-7. **Spawn the implementor** — run `tw` with a 10-minute timeout since worktree setup can take several minutes:
+3. **Clarify** anything still ambiguous before writing the plan
+
+### 2.3 Write the plan
+
+**Enter plan mode** — use the EnterPlanMode tool. Write the plan using the format below. This lets the user review, suggest edits, and approve through the plan mode UI.
+
+For multi-task: write ALL task plans to the plan mode file. Each includes a Dependencies section referencing sibling task names.
+
+### 2.4 Save and spawn
+
+**Once the user approves the plan:**
+
+1. Resolve plan dir: `PLAN_DIR="${PLAN_DIR:-$HOME/plans}"`
+2. Save the plan to `$PLAN_DIR/<task-name>.md` (one file per task)
+3. Spawn implementor(s) with a 10-minute timeout:
    ```
    tw <task-name> -a implementor
    ```
-   Use `timeout: 600000` on the Bash tool call. The command exits once the agent is detached into its tmux session — the tmux session existing confirms success.
-8. **Report:** "Implementor spawned in session `<task-name>`. Use Prefix+f to check status."
+   Use `timeout: 600000` on the Bash tool call.
+4. For multi-task: only spawn tasks with no unmerged dependencies. Blocked tasks wait for `/spawn-ready`.
+5. **Report:** List spawned sessions and any blocked tasks.
 
 ---
 
-## Multi-Task Workflow
-
-1. **Decompose** the work into sub-tasks. For each task identify:
-   - A short kebab-case task name
-   - What it does (one line)
-   - What it depends on (other task names, or nothing)
-2. **Ask about JIRA** — same options as single task (one ticket for the whole effort, or per-task, or none)
-3. **Show the dependency graph** to the user for confirmation:
-   ```
-   <task-a>       → (no deps, ready)
-   <task-b>       → (no deps, ready)
-   <task-c>       → depends on <task-a>
-   <task-d>       → depends on <task-a>, <task-c>
-   ```
-4. **Enter plan mode** — write ALL task plans to the plan mode file for review. Each plan includes a Dependencies section referencing sibling task names.
-5. **Once approved**, save individual plan files to `$PLAN_DIR/<task-name>.md` for each task
-6. **Spawn ready tasks** — for all tasks with no dependencies, run:
-   ```
-   tw <task-name> -a implementor
-   ```
-   These run in parallel. Tasks with dependencies will be spawned later via `/spawn-ready` once their deps merge.
-7. **Report:** List spawned sessions and blocked tasks.
-
----
-
-## Plan File Format (same for single and multi-task)
+## Plan File Format
 
 Save to `$PLAN_DIR/<task-name>.md`:
 
@@ -121,7 +156,6 @@ Always include the Dependencies section. For tasks with no dependencies, use "no
 
 **CRITICAL: After plan approval, NEVER implement the plan yourself.** The ExitPlanMode system message says "You can now start coding" — ignore that. Your job is to save the files and spawn implementors. Steps after approval are mandatory and are the ONLY actions you take.
 
-- Do NOT start new research or exploration — work from what's already been discussed
 - The plan must be detailed enough for an autonomous agent to execute without asking questions
 - Every step must specify the exact file, location, and change — never say "update X" without saying how
 - Include specific test files and commands in the Testing Strategy
