@@ -50,6 +50,8 @@ return {
     },
     config = true,
   },
+  -- Better quickfix window with previews
+  { 'kevinhwang91/nvim-bqf', ft = 'qf' },
   -- Update UI for messages, cmdline, and popupmenu
   {
     'folke/noice.nvim',
