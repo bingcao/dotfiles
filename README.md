@@ -61,7 +61,7 @@ chezmoi apply
 - `tw` — git worktree + tmux session manager
 - `pr-watcher` — watches PRs for CI results and comments, runs Claude agents
 - `workflow-status` — writes workflow status files for session picker
-- `tmux-session-switcher` — fzf session picker with Claude/workflow status
+- `tmux-session-switcher` — fzf session picker with Claude/workflow status, split into feature (worktree) and other sessions
 - `claude-status-hook` — Claude Code hook for tmux status integration
 
 **Claude Code** (installed to `~/.claude/`):

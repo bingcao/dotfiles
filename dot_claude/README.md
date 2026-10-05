@@ -179,7 +179,11 @@ updated: <timestamp>
 
 ### Session picker
 
-`tmux-session-switcher` (bound to Prefix+f, installed to `~/.local/bin/`) shows all sessions with:
+`tmux-session-switcher` (bound to Prefix+f, installed to `~/.local/bin/`) splits sessions into two views, toggled with `tab`:
+- **features** — sessions whose path is a linked git worktree (e.g. created by `tw`)
+- **other** — everything else
+
+It opens on the view matching the current session. Each session shows:
 - Current branch and HEAD commit
 - Claude tool status (working/permission/responded)
 - Webpack status

@@ -1,9 +1,35 @@
 #!/usr/bin/env bash
 # tmux session switcher with fzf
-# enter=switch, ctrl-r=rename, ctrl-a=new, ctrl-x=close
+# tab=toggle features/other, enter=switch, ctrl-r=rename, ctrl-a=new, ctrl-x=close
 # Shows HEAD commit message and Claude status under each session name
+#
+# Sessions are split into two views: "feature" sessions (whose session path is
+# a linked git worktree, e.g. created by tw) and everything else.
 
 STATUS_DIR="/tmp/claude-tmux-status"
+SELF="$(realpath "${BASH_SOURCE[0]}")"
+
+# Prints "feature" if the path is a linked git worktree, otherwise "other"
+path_kind() {
+  local dirs
+  dirs=$(git -C "$1" rev-parse --path-format=absolute --git-dir --git-common-dir 2>/dev/null)
+  if [ -n "$dirs" ] && [ "$(echo "$dirs" | sed -n 1p)" != "$(echo "$dirs" | sed -n 2p)" ]; then
+    echo feature
+  else
+    echo other
+  fi
+}
+
+session_kind() {
+  path_kind "$(tmux display-message -t "$1" -p '#{session_path}' 2>/dev/null)"
+}
+
+view_prompt() {
+  case "$1" in
+    feature) echo "features> " ;;
+    *)       echo "other> " ;;
+  esac
+}
 
 sweep_orphan_status_files() {
   [ -d "$STATUS_DIR" ] || return
@@ -119,9 +145,12 @@ format_workflow_status() {
 }
 
 generate_entries() {
+  local view="$1"
   sweep_orphan_status_files
 
   for session in $(tmux list-sessions -F '#{session_activity} #{session_name}' | sort -rn | cut -d' ' -f2-); do
+    [ "$(session_kind "$session")" = "$view" ] || continue
+
     path=$(tmux display-message -t "$session" -p '#{pane_current_path}' 2>/dev/null)
     branch=$(git -C "$path" branch --show-current 2>/dev/null || echo "")
     commit=$(git -C "$path" log --oneline -1 2>/dev/null || echo "(no git repo)")
@@ -142,9 +171,32 @@ generate_entries() {
   done
 }
 
+case "$1" in
+  --list)
+    generate_entries "$2"
+    exit 0
+    ;;
+  --toggle)
+    # Flip the view stored in the state file and emit fzf actions to switch to it
+    view=$(cat "$2")
+    [ "$view" = feature ] && view=other || view=feature
+    echo "$view" > "$2"
+    echo "change-prompt($(view_prompt "$view"))+reload('$SELF' --list $view)"
+    exit 0
+    ;;
+esac
+
+# Remember the current view across loop iterations (rename/close re-open fzf)
+VIEW_FILE=$(mktemp)
+trap 'rm -f "$VIEW_FILE"' EXIT
+session_kind "$(tmux display-message -p '#S')" > "$VIEW_FILE"
+
 while true; do
-  output=$(generate_entries | fzf --read0 --ansi --reverse --multi-line \
-    --header 'enter=switch / ctrl-r=rename / ctrl-a=new / ctrl-x=close' \
+  view=$(cat "$VIEW_FILE")
+  output=$(generate_entries "$view" | fzf --read0 --ansi --reverse --multi-line \
+    --prompt "$(view_prompt "$view")" \
+    --header 'tab=features/other / enter=switch / ctrl-r=rename / ctrl-a=new / ctrl-x=close' \
+    --bind "tab:transform('$SELF' --toggle '$VIEW_FILE')" \
     --expect=ctrl-r,ctrl-a,ctrl-x)
 
   [ -z "$output" ] && exit 0
