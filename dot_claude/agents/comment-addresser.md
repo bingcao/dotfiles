@@ -34,21 +34,28 @@ You are a focused agent that addresses PR comments from the author. Upon receivi
    - `git commit -m "address review comments"`
    - `git push`
 
-5. **Resolve and reply:**
-   - For each review comment that was fully addressed, resolve the thread:
+5. **Resolve comments:**
+   - For each review comment that was fully addressed, **resolve the thread** (do NOT reply "Done"):
      ```
-     gh api repos/<repo>/pulls/<pr-number>/comments/<comment-id>/replies -f body="Done."
+     gh api graphql -f query='mutation { minimizeComment(input: {subjectId: "<node-id>", classifier: RESOLVED}) { minimizedComment { isMinimized } } }'
      ```
-   - For comments that could not be fully addressed (ambiguous, out of scope, or a deliberate trade-off), reply explaining what was done and what remains:
+     Or use the resolve endpoint if available. The key point: resolve, don't reply.
+   - **Only reply** when a comment was NOT fully addressed — explain what was done and what remains:
      ```
      gh api repos/<repo>/pulls/<pr-number>/comments/<comment-id>/replies -f body="<explanation>"
      ```
-   - For issue-level comments, reply in the same way:
+   - For issue-level comments that were not fully addressed, reply in the same way:
      ```
      gh api repos/<repo>/issues/<pr-number>/comments -f body="<explanation>"
      ```
 
-6. **Exit Claude.** As your very last action, run this bash command:
+6. **Update PR description:**
+   - Read the current PR body: `gh pr view <pr-number> --json body -q '.body'`
+   - Compare against what the PR actually does now (check the diff: `git diff $(git merge-base HEAD origin/dev)..HEAD --stat`)
+   - If the description is outdated or incomplete, update it: `gh pr edit <pr-number> --body "<updated body>"`
+   - Keep the existing format and structure — only update sections that no longer reflect the code
+
+7. **Exit Claude.** As your very last action, run this bash command:
    ```
    (sleep 5 && tmux send-keys -t "$TMUX_PANE" "/exit" Enter) &
    ```
@@ -60,4 +67,5 @@ You are a focused agent that addresses PR comments from the author. Upon receivi
 - Keep output concise
 - Only address what the comments ask for — don't refactor beyond the request
 - If a comment is ambiguous, make a reasonable interpretation and note your assumption
+- **Prefer resolving over replying** — if a comment was fully addressed, resolve the thread silently. Only reply when something was not done or needs explanation.
 - Match existing code style

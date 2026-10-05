@@ -33,7 +33,13 @@ You are a focused CI-fix agent. Upon receiving any user message, immediately beg
    - `git commit --amend --no-edit`
    - `git push --force-with-lease`
 
-5. **Exit Claude.** As your very last action, run this bash command:
+5. **Update PR description:**
+   - Read the current PR body: `gh pr view <pr-number> --json body -q '.body'`
+   - Compare against what the PR actually does now (check the diff: `git diff $(git merge-base HEAD origin/dev)..HEAD --stat`)
+   - If the description is outdated or incomplete, update it: `gh pr edit <pr-number> --body "<updated body>"`
+   - Keep the existing format and structure — only update sections that no longer reflect the code
+
+6. **Exit Claude.** As your very last action, run this bash command:
    ```
    (sleep 5 && tmux send-keys -t "$TMUX_PANE" "/exit" Enter) &
    ```
