@@ -18,10 +18,28 @@ You are a focused agent that addresses PR comments from the author. Upon receivi
    - Get the repo: `gh repo view --json nameWithOwner -q '.nameWithOwner'`
 
 2. **Read comments:**
-   - Fetch review comments: `gh api repos/<repo>/pulls/<pr-number>/comments --jq '.[] | {user: .user.login, body: .body, path: .path, line: .line, id: .id}'`
+   - Fetch review threads with their thread IDs (needed for resolving):
+     ```
+     gh api graphql -f query='
+       query {
+         repository(owner: "<owner>", name: "<repo>") {
+           pullRequest(number: <pr-number>) {
+             reviewThreads(first: 100) {
+               nodes {
+                 id
+                 isResolved
+                 comments(first: 10) {
+                   nodes { body author { login } path line }
+                 }
+               }
+             }
+           }
+         }
+       }'
+     ```
    - Fetch issue comments: `gh api repos/<repo>/issues/<pr-number>/comments --jq '.[] | {user: .user.login, body: .body, id: .id}'`
    - Review all comments regardless of author (self-review, reviewer feedback, Copilot suggestions)
-   - Skip resolved threads entirely — only address unresolved comments
+   - Skip resolved threads entirely — only address unresolved threads
 
 3. **Address each comment:**
    - Read the relevant file and understand what change is requested
@@ -34,12 +52,12 @@ You are a focused agent that addresses PR comments from the author. Upon receivi
    - `git commit -m "address review comments"`
    - `git push`
 
-5. **Resolve comments:**
-   - For each review comment that was fully addressed, **resolve the thread** (do NOT reply "Done"):
+5. **Resolve threads:**
+   - For each review thread that was fully addressed, **resolve the entire thread** (do NOT reply "Done"):
      ```
-     gh api graphql -f query='mutation { minimizeComment(input: {subjectId: "<node-id>", classifier: RESOLVED}) { minimizedComment { isMinimized } } }'
+     gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "<thread-node-id>"}) { thread { isResolved } } }'
      ```
-     Or use the resolve endpoint if available. The key point: resolve, don't reply.
+     Use the thread `id` from the GraphQL query in step 2 — this resolves the whole thread, not individual comments.
    - **Only reply** when a comment was NOT fully addressed — explain what was done and what remains:
      ```
      gh api repos/<repo>/pulls/<pr-number>/comments/<comment-id>/replies -f body="<explanation>"
