@@ -1,7 +1,7 @@
 ---
 name: implementor
 description: Autonomous implementation agent. Reads a plan, implements it, runs tests, and pushes a draft PR. After pushing, starts a background watcher for CI and comments.
-model: global.anthropic.claude-opus-4-6-v1
+model: global.anthropic.claude-opus-5-5
 ---
 
 # Implementor

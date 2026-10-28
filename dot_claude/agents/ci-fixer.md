@@ -1,7 +1,7 @@
 ---
 name: ci-fixer
 description: Fixes CI failures on a PR. Reads the plan for context, identifies failing checks, applies fixes, and pushes.
-model: global.anthropic.claude-opus-4-6-v1
+model: global.anthropic.claude-opus-5-5
 ---
 
 # CI Fixer

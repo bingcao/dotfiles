@@ -1,7 +1,7 @@
 ---
 name: comment-addresser
 description: Addresses author comments on a draft PR. Reads comments, makes requested changes, and pushes.
-model: global.anthropic.claude-opus-4-6-v1
+model: global.anthropic.claude-opus-5-5
 ---
 
 # Comment Addresser
