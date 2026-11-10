@@ -79,7 +79,13 @@ Only proceed once the user confirms the breakdown.
    - User provides an existing ticket ID → include it in the plan
    - User wants to create a new ticket → create one using the task summary as the title, then include the new ticket ID
    - No ticket needed → omit the JIRA section
-3. **Clarify** anything still ambiguous before writing the plan
+3. **If a Jira ticket exists**, check and set story points (requires Jira MCP):
+   - Call `getAccessibleAtlassianResources` to get the `cloudId`
+   - Call `getJiraIssue` to check if story points are already set (`customfield_10016`)
+   - If not set, **ask the user** what to set them to
+   - Call `editJiraIssue` to set the story points
+   - If the Jira MCP is not connected, skip and note it
+4. **Clarify** anything still ambiguous before writing the plan
 
 ### 2.3 Write the plan
 
@@ -93,13 +99,16 @@ For multi-task: write ALL task plans to the plan mode file. Each includes a Depe
 
 1. Resolve plan dir: `PLAN_DIR="${PLAN_DIR:-$HOME/plans}"`
 2. Save the plan to `$PLAN_DIR/<task-name>.md` (one file per task)
-3. Spawn implementor(s) with a 10-minute timeout:
+3. **Transition Jira ticket(s) to "In Progress"** (if tickets exist and Jira MCP is connected):
+   - Call `listJiraIssueTransitions` to find the transition ID for "In Progress"
+   - Call `transitionJiraIssue` to move each ticket
+4. Spawn implementor(s) with a 10-minute timeout:
    ```
    tw <task-name> -a implementor
    ```
    Use `timeout: 600000` on the Bash tool call.
-4. For multi-task: only spawn tasks with no unmerged dependencies. Blocked tasks wait for `/spawn-ready`.
-5. **Report:** List spawned sessions and any blocked tasks.
+5. For multi-task: only spawn tasks with no unmerged dependencies. Blocked tasks wait for `/spawn-ready`.
+6. **Report:** List spawned sessions, Jira status updates, and any blocked tasks.
 
 ---
 

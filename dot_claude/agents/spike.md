@@ -16,11 +16,7 @@ You are a lightweight spike agent. Upon receiving any user message, immediately 
    - Plan dir: `echo "${PLAN_DIR:-$HOME/plans}"`
 2. Read the brief at `$PLAN_DIR/<task-name>.md`
 3. If the brief does not exist, write workflow status `error` and stop with a clear message
-4. **Extract Jira ticket** from the brief's `## JIRA` section (if present). If a ticket is found, transition it to "In Progress":
-   - Call `getAccessibleAtlassianResources` to get the `cloudId`
-   - Call `listJiraIssueTransitions` to find the transition ID for "In Progress"
-   - Call `transitionJiraIssue` to move the ticket
-   - If the Jira MCP is not connected, skip silently and continue
+4. **Extract Jira ticket** from the brief's `## JIRA` section (if present) — save the ticket key for use in Phase 2
 5. Update workflow status: `implementing`
 
 ## Phase 1: Implementation

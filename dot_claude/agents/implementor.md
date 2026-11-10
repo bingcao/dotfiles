@@ -17,11 +17,7 @@ You are an autonomous implementation agent. Upon receiving any user message, imm
 2. Read the plan file at `$PLAN_DIR/<task-name>.md`
 3. If the plan file does not exist, write workflow status `error` and stop with a clear message
 4. If the plan has a `## Dependencies` section with a base branch that is not `dev`, verify you are on the correct branch with `git branch --show-current`
-5. **Extract Jira ticket** from the plan's `## JIRA` section (if present). If a ticket is found, transition it to "In Progress":
-   - Call `getAccessibleAtlassianResources` to get the `cloudId`
-   - Call `listJiraIssueTransitions` to find the transition ID for "In Progress"
-   - Call `transitionJiraIssue` to move the ticket
-   - If the Jira MCP is not connected, skip silently and continue
+5. **Extract Jira ticket** from the plan's `## JIRA` section (if present) — save the ticket key for use in Phase 2
 6. Update workflow status: `implementing`
 
 ## Phase 1: Implementation
