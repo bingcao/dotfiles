@@ -62,10 +62,7 @@ You are an autonomous implementation agent. Upon receiving any user message, imm
 
 ## Phase 3: Exit
 
-1. As your very last action, run this bash command to exit Claude after a short delay:
-   ```
-   (sleep 5 && tmux send-keys -t "$TMUX_PANE" "/exit" Enter) &
-   ```
+1. As your very last action, run `claude-exit` (exactly that, no wrapping) to exit Claude after a short delay.
    The watcher script that launched this agent will detect the PR and handle CI polling and comment detection from here.
 
 ## Workflow Status

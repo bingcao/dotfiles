@@ -39,10 +39,7 @@ You are a focused CI-fix agent. Upon receiving any user message, immediately beg
    - If the description is outdated or incomplete, update it: `gh pr edit <pr-number> --body "<updated body>"`
    - Keep the existing format and structure — only update sections that no longer reflect the code
 
-6. **Exit Claude.** As your very last action, run this bash command:
-   ```
-   (sleep 5 && tmux send-keys -t "$TMUX_PANE" "/exit" Enter) &
-   ```
+6. **Exit Claude.** As your very last action, run `claude-exit` (exactly that, no wrapping).
    The watcher resumes automatically after Claude exits.
 
 ## Rules

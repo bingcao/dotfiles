@@ -7,7 +7,7 @@
       "Bash(workflow-status *)",
       "Bash(git push *)",
       "Bash(gh pr create *)",
-      "Bash(tmux send-keys *)"
+      "Bash(claude-exit)"
     ]
   },
   "model": "global.anthropic.claude-opus-5-5",

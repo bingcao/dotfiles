@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Exits the Claude session in the current tmux pane after a short delay,
+# so the calling tool invocation can return first.
+#
+# Usage: claude-exit [delay-seconds]
+
+set -euo pipefail
+
+pane="${TMUX_PANE:?claude-exit must run inside tmux}"
+(sleep "${1:-5}" && tmux send-keys -t "$pane" "/exit" Enter) >/dev/null 2>&1 &
