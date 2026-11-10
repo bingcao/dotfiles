@@ -6,7 +6,8 @@
     "allow": [
       "Bash(workflow-status *)",
       "Bash(git push *)",
-      "Bash(gh pr create *)"
+      "Bash(gh pr create *)",
+      "Bash(tmux send-keys *)"
     ]
   },
   "model": "global.anthropic.claude-opus-5-5",
